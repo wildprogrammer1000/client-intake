@@ -33,6 +33,7 @@ export namespace $Enums {
   MOBILE_APP: 'MOBILE_APP',
   ADMIN_SYSTEM: 'ADMIN_SYSTEM',
   SHOPPING_MALL: 'SHOPPING_MALL',
+  GAME: 'GAME',
   OTHER: 'OTHER'
 };
 

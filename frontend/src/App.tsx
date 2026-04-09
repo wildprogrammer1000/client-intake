@@ -7,6 +7,7 @@ import {
   InputLabel,
   MenuItem,
   Select,
+  Snackbar,
   Stack,
   TextField,
   Typography,
@@ -15,7 +16,13 @@ import { useMemo, useState } from 'react'
 import type { ChangeEvent, FormEvent } from 'react'
 import AdminPage from './AdminPage'
 
-type ProjectType = 'WEBSITE' | 'MOBILE_APP' | 'ADMIN_SYSTEM' | 'SHOPPING_MALL' | 'OTHER'
+type ProjectType =
+  | 'WEBSITE'
+  | 'MOBILE_APP'
+  | 'ADMIN_SYSTEM'
+  | 'SHOPPING_MALL'
+  | 'GAME'
+  | 'OTHER'
 
 type InquiryForm = {
   companyName: string
@@ -55,8 +62,15 @@ function App() {
   const [form, setForm] = useState<InquiryForm>(initialFormValue)
   const [files, setFiles] = useState<File[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [errorMessage, setErrorMessage] = useState('')
-  const [successMessage, setSuccessMessage] = useState('')
+  const [toast, setToast] = useState<{
+    open: boolean
+    message: string
+    severity: 'success' | 'error'
+  }>({
+    open: false,
+    message: '',
+    severity: 'success',
+  })
 
   const canSubmit = useMemo(() => {
     return Boolean(
@@ -128,8 +142,6 @@ function App() {
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    setErrorMessage('')
-    setSuccessMessage('')
     setIsSubmitting(true)
 
     try {
@@ -152,11 +164,19 @@ function App() {
 
       setForm(initialFormValue)
       setFiles([])
-      setSuccessMessage('문의가 정상 접수되었습니다. 빠르게 확인 후 연락드리겠습니다.')
+      setToast({
+        open: true,
+        message: '문의가 정상 접수되었습니다. 빠르게 확인 후 연락드리겠습니다.',
+        severity: 'success',
+      })
     } catch (error) {
       const message =
         error instanceof Error ? error.message : '문의 접수 중 알 수 없는 오류가 발생했습니다.'
-      setErrorMessage(message)
+      setToast({
+        open: true,
+        message,
+        severity: 'error',
+      })
     } finally {
       setIsSubmitting(false)
     }
@@ -175,9 +195,6 @@ function App() {
 
       <Box component="form" onSubmit={handleSubmit}>
         <Stack spacing={3}>
-          {errorMessage ? <Alert severity="error">{errorMessage}</Alert> : null}
-          {successMessage ? <Alert severity="success">{successMessage}</Alert> : null}
-
           <Typography variant="h6">1. 기본 정보</Typography>
           <TextField
             fullWidth
@@ -222,8 +239,9 @@ function App() {
               <MenuItem value="WEBSITE">웹사이트</MenuItem>
               <MenuItem value="MOBILE_APP">모바일 앱 (iOS / Android)</MenuItem>
               <MenuItem value="ADMIN_SYSTEM">관리자 시스템</MenuItem>
-              <MenuItem value="SHOPPING_MALL">쇼핑몰</MenuItem>
+              <MenuItem value="GAME">게임</MenuItem>
               <MenuItem value="OTHER">기타</MenuItem>
+         
             </Select>
           </FormControl>
 
@@ -303,12 +321,11 @@ function App() {
             onChange={handleTextChange('inquiryDetails')}
           />
 
-          <Typography variant="h6">5. 기타</Typography>
+          <Typography variant="h6">5. 첨부파일 (선택)</Typography>
           <TextField
             fullWidth
             type="file"
             slotProps={{ htmlInput: { multiple: true } }}
-            label="첨부파일 (선택)"
             onChange={handleFileChange}
             helperText="기획서, 와이어프레임, 디자인 시안 등"
           />
@@ -323,6 +340,21 @@ function App() {
           </Button>
         </Stack>
       </Box>
+      <Snackbar
+        open={toast.open}
+        autoHideDuration={4000}
+        onClose={() => setToast((prev) => ({ ...prev, open: false }))}
+        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+      >
+        <Alert
+          onClose={() => setToast((prev) => ({ ...prev, open: false }))}
+          severity={toast.severity}
+          variant="filled"
+          sx={{ width: '100%' }}
+        >
+          {toast.message}
+        </Alert>
+      </Snackbar>
     </Container>
   )
 }

@@ -140,6 +140,7 @@ exports.ProjectType = exports.$Enums.ProjectType = {
   MOBILE_APP: 'MOBILE_APP',
   ADMIN_SYSTEM: 'ADMIN_SYSTEM',
   SHOPPING_MALL: 'SHOPPING_MALL',
+  GAME: 'GAME',
   OTHER: 'OTHER'
 };
 
@@ -194,8 +195,8 @@ const config = {
       }
     }
   },
-  "inlineSchema": "generator client {\n  provider = \"prisma-client-js\"\n  output   = \"../src/generated/prisma\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel Inquiry {\n  id                 Int         @id @default(autoincrement())\n  companyName        String?\n  name               String\n  contact            String\n  projectType        ProjectType\n  projectTypeDetail  String?\n  developmentPurpose String\n  keyFeatures        String\n  referenceLinks     String?\n  expectedTimeline   String\n  budget             String\n  inquiryDetails     String\n  attachmentUrls     String[]\n  createdAt          DateTime    @default(now())\n  updatedAt          DateTime    @updatedAt\n}\n\nenum ProjectType {\n  WEBSITE\n  MOBILE_APP\n  ADMIN_SYSTEM\n  SHOPPING_MALL\n  OTHER\n}\n\nmodel AdminUser {\n  id           Int      @id @default(autoincrement())\n  email        String   @unique\n  name         String\n  passwordHash String\n  isActive     Boolean  @default(true)\n  createdAt    DateTime @default(now())\n  updatedAt    DateTime @updatedAt\n}\n",
-  "inlineSchemaHash": "cf86d4e77b2e4c84ab4c5ccb08a24f2643188b22772e89b54922427104fb87fd",
+  "inlineSchema": "generator client {\n  provider = \"prisma-client-js\"\n  output   = \"../src/generated/prisma\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel Inquiry {\n  id                 Int         @id @default(autoincrement())\n  companyName        String?\n  name               String\n  contact            String\n  projectType        ProjectType\n  projectTypeDetail  String?\n  developmentPurpose String\n  keyFeatures        String\n  referenceLinks     String?\n  expectedTimeline   String\n  budget             String\n  inquiryDetails     String\n  attachmentUrls     String[]\n  createdAt          DateTime    @default(now())\n  updatedAt          DateTime    @updatedAt\n}\n\nenum ProjectType {\n  WEBSITE\n  MOBILE_APP\n  ADMIN_SYSTEM\n  SHOPPING_MALL\n  GAME\n  OTHER\n}\n\nmodel AdminUser {\n  id           Int      @id @default(autoincrement())\n  email        String   @unique\n  name         String\n  passwordHash String\n  isActive     Boolean  @default(true)\n  createdAt    DateTime @default(now())\n  updatedAt    DateTime @updatedAt\n}\n",
+  "inlineSchemaHash": "e733284cf33a680a489dd56036181bffc3774930a8b00e9fb10559b6c2240f80",
   "copyEngine": true
 }
 config.dirname = '/'

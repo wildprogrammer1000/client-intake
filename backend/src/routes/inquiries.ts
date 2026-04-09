@@ -11,6 +11,7 @@ const createInquirySchema = z.object({
     'MOBILE_APP',
     'ADMIN_SYSTEM',
     'SHOPPING_MALL',
+    'GAME',
     'OTHER',
   ]),
   projectTypeDetail: z.string().trim().max(200).optional(),

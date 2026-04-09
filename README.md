@@ -75,6 +75,7 @@ AWS_CLOUDFRONT_URL=https://your-cloudfront-domain
 
 - 로그인: `POST /api/admin/auth/login`
 - 인증 상태 확인: `GET /api/admin/auth/me`
+- 비밀번호 변경(인증 필요): `PATCH /api/admin/auth/password`
 - 문의 목록 조회(인증 필요): `GET /api/admin/inquiries`
 - 문의 상세 조회(인증 필요): `GET /api/admin/inquiries/:id`
 
