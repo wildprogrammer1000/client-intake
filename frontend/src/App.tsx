@@ -183,8 +183,8 @@ function App() {
   }
 
   return (
-    <Container maxWidth="md" sx={{ py: { xs: 5, md: 8 } }}>
-      <Stack spacing={2} sx={{ mb: 4 }}>
+    <Container maxWidth="md" sx={{ py: { xs: 5 } }}>
+      <Stack spacing={2} sx={{ mb: 4, alignItems: 'center', textAlign: 'center' }}>
         <Typography variant="h4" component="h1" sx={{ fontWeight: 700 }}>
           개발 문의하기
         </Typography>
