@@ -95,6 +95,7 @@ export default function AdminPage() {
   const [isPasswordChanging, setIsPasswordChanging] = useState(false)
   const [isDetailLoading, setIsDetailLoading] = useState(false)
   const [isManagementSaving, setIsManagementSaving] = useState(false)
+  const [statusSavingIds, setStatusSavingIds] = useState<Record<number, boolean>>({})
   const [managementStatus, setManagementStatus] = useState<InquiryStatus>('WAITING')
   const [managementMemo, setManagementMemo] = useState('')
 
@@ -218,6 +219,71 @@ export default function AdminPage() {
     }
   }
 
+  const handleChangeInquiryStatus = async (id: number, status: InquiryStatus) => {
+    if (!token) {
+      return
+    }
+
+    setErrorMessage('')
+    setStatusSavingIds((prev) => ({ ...prev, [id]: true }))
+    const previousItem = items.find((item) => item.id === id)
+
+    // Optimistic update for immediate feedback in the grid.
+    setItems((prev) => prev.map((item) => (item.id === id ? { ...item, status } : item)))
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/admin/inquiries/${id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          ...withAuthHeader(token),
+        },
+        body: JSON.stringify({ status }),
+      })
+
+      if (response.status === 401) {
+        logout()
+        throw new Error('세션이 만료되었습니다. 다시 로그인해주세요.')
+      }
+
+      if (!response.ok) {
+        const payload = await response.json().catch(() => null)
+        throw new Error(payload?.message ?? '문의 상태 변경에 실패했습니다.')
+      }
+
+      const updated = (await response.json()) as InquiryDetail
+      setItems((prev) =>
+        prev.map((item) =>
+          item.id === id
+            ? {
+                ...item,
+                status: updated.status,
+                adminMemo: updated.adminMemo,
+              }
+            : item,
+        ),
+      )
+      if (selected?.id === id) {
+        setSelected(updated)
+        setManagementStatus(updated.status)
+        setManagementMemo(updated.adminMemo ?? '')
+      }
+    } catch (error) {
+      if (previousItem) {
+        setItems((prev) =>
+          prev.map((item) => (item.id === id ? { ...item, status: previousItem.status } : item)),
+        )
+      }
+      setErrorMessage(error instanceof Error ? error.message : '문의 상태 변경 중 오류가 발생했습니다.')
+    } finally {
+      setStatusSavingIds((prev) => {
+        const next = { ...prev }
+        delete next[id]
+        return next
+      })
+    }
+  }
+
   const handleLogin = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     setErrorMessage('')
@@ -320,14 +386,46 @@ export default function AdminPage() {
     {
       field: 'status',
       headerName: '상태',
-      minWidth: 120,
-      flex: 0.8,
+      minWidth: 170,
+      flex: 1,
       renderCell: (params: GridRenderCellParams<InquiryListItem, InquiryStatus>) => (
-        <Chip
+        <FormControl
           size="small"
-          label={INQUIRY_STATUS_LABELS[params.value ?? 'WAITING']}
-          color={INQUIRY_STATUS_COLORS[params.value ?? 'WAITING']}
-        />
+          fullWidth
+          onClick={(event) => event.stopPropagation()}
+          onMouseDown={(event) => event.stopPropagation()}
+        >
+          <Select
+            value={params.value ?? 'WAITING'}
+            disabled={Boolean(statusSavingIds[params.row.id])}
+            onChange={(event) =>
+              handleChangeInquiryStatus(params.row.id, event.target.value as InquiryStatus)
+            }
+            sx={{ minWidth: 120 }}
+          >
+            <MenuItem value="WAITING">
+              <Chip
+                size="small"
+                label={INQUIRY_STATUS_LABELS.WAITING}
+                color={INQUIRY_STATUS_COLORS.WAITING}
+              />
+            </MenuItem>
+            <MenuItem value="IN_PROGRESS">
+              <Chip
+                size="small"
+                label={INQUIRY_STATUS_LABELS.IN_PROGRESS}
+                color={INQUIRY_STATUS_COLORS.IN_PROGRESS}
+              />
+            </MenuItem>
+            <MenuItem value="COMPLETED">
+              <Chip
+                size="small"
+                label={INQUIRY_STATUS_LABELS.COMPLETED}
+                color={INQUIRY_STATUS_COLORS.COMPLETED}
+              />
+            </MenuItem>
+          </Select>
+        </FormControl>
       ),
     },
     {
@@ -413,7 +511,7 @@ export default function AdminPage() {
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
       <Stack
-        direction={{ xs: 'column', md: 'row' }}
+        direction="row"
         spacing={2}
         sx={{ mb: 3, justifyContent: 'space-between' }}
       >
@@ -443,23 +541,26 @@ export default function AdminPage() {
           }}
         >
           <CardContent>
-            <Stack spacing={1}>
-              <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
-                메뉴
-              </Typography>
+            <Stack direction={{ xs: 'row', md: 'column' }} spacing={1}>
               <Button
-                fullWidth
                 variant={activeMenu === 'inquiries' ? 'contained' : 'text'}
                 onClick={() => setActiveMenu('inquiries')}
-                sx={{ justifyContent: 'flex-start' }}
+                sx={{
+                  flex: { xs: 1, md: 'none' },
+                  width: { xs: 'auto', md: '100%' },
+                  justifyContent: { xs: 'center', md: 'flex-start' },
+                }}
               >
                 문의 목록
               </Button>
               <Button
-                fullWidth
                 variant={activeMenu === 'settings' ? 'contained' : 'text'}
                 onClick={() => setActiveMenu('settings')}
-                sx={{ justifyContent: 'flex-start' }}
+                sx={{
+                  flex: { xs: 1, md: 'none' },
+                  width: { xs: 'auto', md: '100%' },
+                  justifyContent: { xs: 'center', md: 'flex-start' },
+                }}
               >
                 설정
               </Button>
@@ -467,7 +568,13 @@ export default function AdminPage() {
           </CardContent>
         </Card>
 
-        <Box sx={{ flex: 1, minWidth: 0 }}>
+        <Box
+          sx={{
+            flex: 1,
+            minWidth: 0,
+            width: { xs: '100%', md: 'auto' },
+          }}
+        >
           {activeMenu === 'inquiries' ? (
             <Card variant="outlined">
               <CardContent>
@@ -492,9 +599,11 @@ export default function AdminPage() {
                           }
                           sx={{
                             '& .MuiDataGrid-cell': {
-                              overflow: 'hidden',
+                              display: 'flex',
+                              alignItems: 'center',
                               textOverflow: 'ellipsis',
                               whiteSpace: 'nowrap',
+                              overflow: 'hidden',
                             },
                             '& .MuiDataGrid-columnHeaderTitle': {
                               overflow: 'hidden',
