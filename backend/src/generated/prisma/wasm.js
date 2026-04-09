@@ -111,6 +111,16 @@ exports.Prisma.InquiryScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.AdminUserScalarFieldEnum = {
+  id: 'id',
+  email: 'email',
+  name: 'name',
+  passwordHash: 'passwordHash',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -134,7 +144,8 @@ exports.ProjectType = exports.$Enums.ProjectType = {
 };
 
 exports.Prisma.ModelName = {
-  Inquiry: 'Inquiry'
+  Inquiry: 'Inquiry',
+  AdminUser: 'AdminUser'
 };
 /**
  * Create the Client
@@ -165,7 +176,8 @@ const config = {
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
-    "rootEnvPath": null
+    "rootEnvPath": null,
+    "schemaEnvPath": "../../../.env"
   },
   "relativePath": "../../../prisma",
   "clientVersion": "6.19.3",
@@ -174,7 +186,6 @@ const config = {
     "db"
   ],
   "activeProvider": "postgresql",
-  "postinstall": false,
   "inlineDatasources": {
     "db": {
       "url": {
@@ -183,13 +194,13 @@ const config = {
       }
     }
   },
-  "inlineSchema": "generator client {\n  provider = \"prisma-client-js\"\n  output   = \"../src/generated/prisma\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel Inquiry {\n  id                 Int         @id @default(autoincrement())\n  companyName        String?\n  name               String\n  contact            String\n  projectType        ProjectType\n  projectTypeDetail  String?\n  developmentPurpose String\n  keyFeatures        String\n  referenceLinks     String?\n  expectedTimeline   String\n  budget             String\n  inquiryDetails     String\n  attachmentUrls     String[]\n  createdAt          DateTime    @default(now())\n  updatedAt          DateTime    @updatedAt\n}\n\nenum ProjectType {\n  WEBSITE\n  MOBILE_APP\n  ADMIN_SYSTEM\n  SHOPPING_MALL\n  OTHER\n}\n",
-  "inlineSchemaHash": "36c1f768929b508bd9bcec95c9f0e433c514f024d253d9495a483335c1527e4a",
+  "inlineSchema": "generator client {\n  provider = \"prisma-client-js\"\n  output   = \"../src/generated/prisma\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel Inquiry {\n  id                 Int         @id @default(autoincrement())\n  companyName        String?\n  name               String\n  contact            String\n  projectType        ProjectType\n  projectTypeDetail  String?\n  developmentPurpose String\n  keyFeatures        String\n  referenceLinks     String?\n  expectedTimeline   String\n  budget             String\n  inquiryDetails     String\n  attachmentUrls     String[]\n  createdAt          DateTime    @default(now())\n  updatedAt          DateTime    @updatedAt\n}\n\nenum ProjectType {\n  WEBSITE\n  MOBILE_APP\n  ADMIN_SYSTEM\n  SHOPPING_MALL\n  OTHER\n}\n\nmodel AdminUser {\n  id           Int      @id @default(autoincrement())\n  email        String   @unique\n  name         String\n  passwordHash String\n  isActive     Boolean  @default(true)\n  createdAt    DateTime @default(now())\n  updatedAt    DateTime @updatedAt\n}\n",
+  "inlineSchemaHash": "cf86d4e77b2e4c84ab4c5ccb08a24f2643188b22772e89b54922427104fb87fd",
   "copyEngine": true
 }
 config.dirname = '/'
 
-config.runtimeDataModel = JSON.parse("{\"models\":{\"Inquiry\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"companyName\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"contact\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"projectType\",\"kind\":\"enum\",\"type\":\"ProjectType\"},{\"name\":\"projectTypeDetail\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"developmentPurpose\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"keyFeatures\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"referenceLinks\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"expectedTimeline\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"budget\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"inquiryDetails\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"attachmentUrls\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null}},\"enums\":{},\"types\":{}}")
+config.runtimeDataModel = JSON.parse("{\"models\":{\"Inquiry\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"companyName\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"contact\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"projectType\",\"kind\":\"enum\",\"type\":\"ProjectType\"},{\"name\":\"projectTypeDetail\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"developmentPurpose\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"keyFeatures\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"referenceLinks\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"expectedTimeline\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"budget\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"inquiryDetails\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"attachmentUrls\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"AdminUser\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"email\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"passwordHash\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"isActive\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null}},\"enums\":{},\"types\":{}}")
 defineDmmfProperty(exports.Prisma, config.runtimeDataModel)
 config.engineWasm = {
   getRuntime: async () => require('./query_engine_bg.js'),

@@ -7,7 +7,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - client_intake_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d client_intake"]
       interval: 10s
@@ -28,6 +28,7 @@ services:
       AWS_S3_BUCKET: ${AWS_S3_BUCKET:-}
       AWS_S3_PREFIX: ${AWS_S3_PREFIX:-inquiries}
       AWS_CLOUDFRONT_URL: ${AWS_CLOUDFRONT_URL:-}
+      ADMIN_JWT_SECRET: ${ADMIN_JWT_SECRET:-replace-with-strong-secret}
     depends_on:
       postgres:
         condition: service_healthy
@@ -45,4 +46,4 @@ services:
       - "5173:80"
 
 volumes:
-  postgres_data:
+  client_intake_data:

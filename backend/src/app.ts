@@ -1,6 +1,8 @@
 import cors from 'cors'
 import express from 'express'
 import helmet from 'helmet'
+import { adminAuthRouter } from './routes/adminAuth.js'
+import { adminInquiryRouter } from './routes/adminInquiries.js'
 import { healthRouter } from './routes/health.js'
 import { inquiryRouter } from './routes/inquiries.js'
 import { uploadRouter } from './routes/uploads.js'
@@ -27,6 +29,8 @@ app.get('/', (_req, res) => {
 app.use('/health', healthRouter)
 app.use('/api/inquiries', inquiryRouter)
 app.use('/api/uploads', uploadRouter)
+app.use('/api/admin/auth', adminAuthRouter)
+app.use('/api/admin/inquiries', adminInquiryRouter)
 
 app.use((error: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
   console.error(error)

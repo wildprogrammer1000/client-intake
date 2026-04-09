@@ -13,6 +13,7 @@ import {
 } from '@mui/material'
 import { useMemo, useState } from 'react'
 import type { ChangeEvent, FormEvent } from 'react'
+import AdminPage from './AdminPage'
 
 type ProjectType = 'WEBSITE' | 'MOBILE_APP' | 'ADMIN_SYSTEM' | 'SHOPPING_MALL' | 'OTHER'
 
@@ -47,6 +48,10 @@ const initialFormValue: InquiryForm = {
 }
 
 function App() {
+  if (window.location.pathname.startsWith('/admin')) {
+    return <AdminPage />
+  }
+
   const [form, setForm] = useState<InquiryForm>(initialFormValue)
   const [files, setFiles] = useState<File[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -305,7 +310,7 @@ function App() {
             slotProps={{ htmlInput: { multiple: true } }}
             label="첨부파일 (선택)"
             onChange={handleFileChange}
-            helperText="기획서, 와이어프레임, 디자인 시안 등 (업로드 시 presigned URL 사용)"
+            helperText="기획서, 와이어프레임, 디자인 시안 등"
           />
           {files.length ? (
             <Alert severity="info">

@@ -139,6 +139,16 @@ exports.Prisma.InquiryScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.AdminUserScalarFieldEnum = {
+  id: 'id',
+  email: 'email',
+  name: 'name',
+  passwordHash: 'passwordHash',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -162,7 +172,8 @@ exports.ProjectType = exports.$Enums.ProjectType = {
 };
 
 exports.Prisma.ModelName = {
-  Inquiry: 'Inquiry'
+  Inquiry: 'Inquiry',
+  AdminUser: 'AdminUser'
 };
 
 /**

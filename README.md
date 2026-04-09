@@ -44,6 +44,7 @@ npm run dev:backend
 ```bash
 npm run prisma:generate --workspace backend
 npm run prisma:migrate --workspace backend -- --name init
+npm run prisma:seed --workspace backend
 ```
 
 ## 문의 접수 API
@@ -69,6 +70,20 @@ AWS_CLOUDFRONT_URL=https://your-cloudfront-domain
 주의사항:
 - S3 버킷 CORS에서 프론트 도메인 `PUT` 허용이 필요합니다.
 - 민감 파일 업로드가 필요하면 파일 확장자/용량 검증과 안티바이러스 스캔(비동기)을 추가하세요.
+
+## 관리자 인증/조회
+
+- 로그인: `POST /api/admin/auth/login`
+- 인증 상태 확인: `GET /api/admin/auth/me`
+- 문의 목록 조회(인증 필요): `GET /api/admin/inquiries`
+- 문의 상세 조회(인증 필요): `GET /api/admin/inquiries/:id`
+
+관리자 페이지 URL:
+- `http://localhost:5173/admin`
+
+초기 관리자 계정은 시드로 생성됩니다.
+- 환경변수: `ADMIN_INITIAL_EMAIL`, `ADMIN_INITIAL_PASSWORD`, `ADMIN_INITIAL_NAME`
+- 실행: `npm run prisma:seed --workspace backend`
 
 ## 프로덕션 환경 실행 (Docker Compose)
 
