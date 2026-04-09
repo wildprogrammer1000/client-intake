@@ -4,7 +4,7 @@ import { prisma } from '../lib/prisma.js'
 
 type AdminJwtPayload = {
   sub: string
-  email: string
+  userId: string
   role: 'admin'
 }
 
@@ -49,7 +49,7 @@ export const requireAdminAuth = async (
 
     const adminUser = await prisma.adminUser.findUnique({
       where: { id: adminId },
-      select: { id: true, email: true, name: true, isActive: true },
+      select: { id: true, userId: true, name: true, isActive: true },
     })
 
     if (!adminUser || !adminUser.isActive) {

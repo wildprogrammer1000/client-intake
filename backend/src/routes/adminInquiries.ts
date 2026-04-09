@@ -9,12 +9,22 @@ const listQuerySchema = z.object({
   projectType: z
     .enum(['WEBSITE', 'MOBILE_APP', 'ADMIN_SYSTEM', 'SHOPPING_MALL', 'GAME', 'OTHER'])
     .optional(),
+  status: z.enum(['WAITING', 'IN_PROGRESS', 'COMPLETED']).optional(),
   keyword: z.string().trim().max(200).optional(),
 })
 
 const idParamSchema = z.object({
   id: z.coerce.number().int().positive(),
 })
+
+const updateInquirySchema = z
+  .object({
+    status: z.enum(['WAITING', 'IN_PROGRESS', 'COMPLETED']).optional(),
+    adminMemo: z.string().trim().max(5000).nullable().optional(),
+  })
+  .refine((value) => value.status !== undefined || value.adminMemo !== undefined, {
+    message: '수정할 항목이 없습니다.',
+  })
 
 export const adminInquiryRouter = Router()
 adminInquiryRouter.use(requireAdminAuth)
@@ -29,11 +39,12 @@ adminInquiryRouter.get('/', async (req, res) => {
       })
     }
 
-    const { page, pageSize, projectType, keyword } = parsed.data
+    const { page, pageSize, projectType, status, keyword } = parsed.data
     const skip = (page - 1) * pageSize
 
     const where = {
       ...(projectType ? { projectType } : {}),
+      ...(status ? { status } : {}),
       ...(keyword
         ? {
             OR: [
@@ -59,6 +70,8 @@ adminInquiryRouter.get('/', async (req, res) => {
           name: true,
           contact: true,
           projectType: true,
+          status: true,
+          adminMemo: true,
           expectedTimeline: true,
           budget: true,
           createdAt: true,
@@ -103,5 +116,44 @@ adminInquiryRouter.get('/:id', async (req, res) => {
   } catch (error) {
     console.error(error)
     return res.status(500).json({ message: '문의 상세 조회 중 오류가 발생했습니다.' })
+  }
+})
+
+adminInquiryRouter.patch('/:id', async (req, res) => {
+  try {
+    const parsedParams = idParamSchema.safeParse(req.params)
+    if (!parsedParams.success) {
+      return res.status(400).json({
+        message: '문의 ID가 유효하지 않습니다.',
+        issues: parsedParams.error.flatten(),
+      })
+    }
+
+    const parsedBody = updateInquirySchema.safeParse(req.body)
+    if (!parsedBody.success) {
+      return res.status(400).json({
+        message: '수정 요청 본문이 유효하지 않습니다.',
+        issues: parsedBody.error.flatten(),
+      })
+    }
+
+    const { status, adminMemo } = parsedBody.data
+    const memoValue = adminMemo === undefined ? undefined : adminMemo || null
+
+    const inquiry = await prisma.inquiry.update({
+      where: { id: parsedParams.data.id },
+      data: {
+        ...(status !== undefined ? { status } : {}),
+        ...(memoValue !== undefined ? { adminMemo: memoValue } : {}),
+      },
+    })
+
+    return res.status(200).json(inquiry)
+  } catch (error) {
+    if (error instanceof Error && 'code' in error && error.code === 'P2025') {
+      return res.status(404).json({ message: '문의를 찾을 수 없습니다.' })
+    }
+    console.error(error)
+    return res.status(500).json({ message: '문의 관리 정보 저장 중 오류가 발생했습니다.' })
   }
 })

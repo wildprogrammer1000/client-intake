@@ -83,7 +83,8 @@ AWS_CLOUDFRONT_URL=https://your-cloudfront-domain
 - `http://localhost:5173/admin`
 
 초기 관리자 계정은 시드로 생성됩니다.
-- 환경변수: `ADMIN_INITIAL_EMAIL`, `ADMIN_INITIAL_PASSWORD`, `ADMIN_INITIAL_NAME`
+- 환경변수: `ADMIN_INITIAL_USER_ID`, `ADMIN_INITIAL_PASSWORD`, `ADMIN_INITIAL_NAME`
+- 기본 아이디: `admin`
 - 실행: `npm run prisma:seed --workspace backend`
 
 ## 프로덕션 환경 실행 (Docker Compose)

@@ -59,11 +59,11 @@ const formatDateTime = (date: Date) => {
 
 export const sendInquiryNotificationEmail = async (payload: InquiryNotificationPayload) => {
   const fromAddress = process.env.AWS_SES_FROM_EMAIL
-  const toAddress = process.env.ADMIN_NOTIFICATION_EMAIL ?? process.env.ADMIN_INITIAL_EMAIL
+  const toAddress = process.env.ADMIN_NOTIFICATION_EMAIL
 
   if (!fromAddress || !toAddress) {
     console.warn(
-      '[inquiryNotification] AWS_SES_FROM_EMAIL 또는 ADMIN_NOTIFICATION_EMAIL(또는 ADMIN_INITIAL_EMAIL)이 설정되지 않아 메일 전송을 건너뜁니다.',
+      '[inquiryNotification] AWS_SES_FROM_EMAIL 또는 ADMIN_NOTIFICATION_EMAIL이 설정되지 않아 메일 전송을 건너뜁니다.',
     )
     return
   }

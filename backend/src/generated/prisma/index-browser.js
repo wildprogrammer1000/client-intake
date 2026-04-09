@@ -127,6 +127,8 @@ exports.Prisma.InquiryScalarFieldEnum = {
   name: 'name',
   contact: 'contact',
   projectType: 'projectType',
+  status: 'status',
+  adminMemo: 'adminMemo',
   projectTypeDetail: 'projectTypeDetail',
   developmentPurpose: 'developmentPurpose',
   keyFeatures: 'keyFeatures',
@@ -141,7 +143,7 @@ exports.Prisma.InquiryScalarFieldEnum = {
 
 exports.Prisma.AdminUserScalarFieldEnum = {
   id: 'id',
-  email: 'email',
+  userId: 'userId',
   name: 'name',
   passwordHash: 'passwordHash',
   isActive: 'isActive',
@@ -170,6 +172,12 @@ exports.ProjectType = exports.$Enums.ProjectType = {
   SHOPPING_MALL: 'SHOPPING_MALL',
   GAME: 'GAME',
   OTHER: 'OTHER'
+};
+
+exports.InquiryStatus = exports.$Enums.InquiryStatus = {
+  WAITING: 'WAITING',
+  IN_PROGRESS: 'IN_PROGRESS',
+  COMPLETED: 'COMPLETED'
 };
 
 exports.Prisma.ModelName = {

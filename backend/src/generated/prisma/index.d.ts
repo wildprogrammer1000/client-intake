@@ -28,7 +28,16 @@ export type AdminUser = $Result.DefaultSelection<Prisma.$AdminUserPayload>
  * Enums
  */
 export namespace $Enums {
-  export const ProjectType: {
+  export const InquiryStatus: {
+  WAITING: 'WAITING',
+  IN_PROGRESS: 'IN_PROGRESS',
+  COMPLETED: 'COMPLETED'
+};
+
+export type InquiryStatus = (typeof InquiryStatus)[keyof typeof InquiryStatus]
+
+
+export const ProjectType: {
   WEBSITE: 'WEBSITE',
   MOBILE_APP: 'MOBILE_APP',
   ADMIN_SYSTEM: 'ADMIN_SYSTEM',
@@ -40,6 +49,10 @@ export namespace $Enums {
 export type ProjectType = (typeof ProjectType)[keyof typeof ProjectType]
 
 }
+
+export type InquiryStatus = $Enums.InquiryStatus
+
+export const InquiryStatus: typeof $Enums.InquiryStatus
 
 export type ProjectType = $Enums.ProjectType
 
@@ -999,6 +1012,8 @@ export namespace Prisma {
     name: string | null
     contact: string | null
     projectType: $Enums.ProjectType | null
+    status: $Enums.InquiryStatus | null
+    adminMemo: string | null
     projectTypeDetail: string | null
     developmentPurpose: string | null
     keyFeatures: string | null
@@ -1016,6 +1031,8 @@ export namespace Prisma {
     name: string | null
     contact: string | null
     projectType: $Enums.ProjectType | null
+    status: $Enums.InquiryStatus | null
+    adminMemo: string | null
     projectTypeDetail: string | null
     developmentPurpose: string | null
     keyFeatures: string | null
@@ -1033,6 +1050,8 @@ export namespace Prisma {
     name: number
     contact: number
     projectType: number
+    status: number
+    adminMemo: number
     projectTypeDetail: number
     developmentPurpose: number
     keyFeatures: number
@@ -1061,6 +1080,8 @@ export namespace Prisma {
     name?: true
     contact?: true
     projectType?: true
+    status?: true
+    adminMemo?: true
     projectTypeDetail?: true
     developmentPurpose?: true
     keyFeatures?: true
@@ -1078,6 +1099,8 @@ export namespace Prisma {
     name?: true
     contact?: true
     projectType?: true
+    status?: true
+    adminMemo?: true
     projectTypeDetail?: true
     developmentPurpose?: true
     keyFeatures?: true
@@ -1095,6 +1118,8 @@ export namespace Prisma {
     name?: true
     contact?: true
     projectType?: true
+    status?: true
+    adminMemo?: true
     projectTypeDetail?: true
     developmentPurpose?: true
     keyFeatures?: true
@@ -1200,6 +1225,8 @@ export namespace Prisma {
     name: string
     contact: string
     projectType: $Enums.ProjectType
+    status: $Enums.InquiryStatus
+    adminMemo: string | null
     projectTypeDetail: string | null
     developmentPurpose: string
     keyFeatures: string
@@ -1237,6 +1264,8 @@ export namespace Prisma {
     name?: boolean
     contact?: boolean
     projectType?: boolean
+    status?: boolean
+    adminMemo?: boolean
     projectTypeDetail?: boolean
     developmentPurpose?: boolean
     keyFeatures?: boolean
@@ -1255,6 +1284,8 @@ export namespace Prisma {
     name?: boolean
     contact?: boolean
     projectType?: boolean
+    status?: boolean
+    adminMemo?: boolean
     projectTypeDetail?: boolean
     developmentPurpose?: boolean
     keyFeatures?: boolean
@@ -1273,6 +1304,8 @@ export namespace Prisma {
     name?: boolean
     contact?: boolean
     projectType?: boolean
+    status?: boolean
+    adminMemo?: boolean
     projectTypeDetail?: boolean
     developmentPurpose?: boolean
     keyFeatures?: boolean
@@ -1291,6 +1324,8 @@ export namespace Prisma {
     name?: boolean
     contact?: boolean
     projectType?: boolean
+    status?: boolean
+    adminMemo?: boolean
     projectTypeDetail?: boolean
     developmentPurpose?: boolean
     keyFeatures?: boolean
@@ -1303,7 +1338,7 @@ export namespace Prisma {
     updatedAt?: boolean
   }
 
-  export type InquiryOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "companyName" | "name" | "contact" | "projectType" | "projectTypeDetail" | "developmentPurpose" | "keyFeatures" | "referenceLinks" | "expectedTimeline" | "budget" | "inquiryDetails" | "attachmentUrls" | "createdAt" | "updatedAt", ExtArgs["result"]["inquiry"]>
+  export type InquiryOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "companyName" | "name" | "contact" | "projectType" | "status" | "adminMemo" | "projectTypeDetail" | "developmentPurpose" | "keyFeatures" | "referenceLinks" | "expectedTimeline" | "budget" | "inquiryDetails" | "attachmentUrls" | "createdAt" | "updatedAt", ExtArgs["result"]["inquiry"]>
 
   export type $InquiryPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Inquiry"
@@ -1314,6 +1349,8 @@ export namespace Prisma {
       name: string
       contact: string
       projectType: $Enums.ProjectType
+      status: $Enums.InquiryStatus
+      adminMemo: string | null
       projectTypeDetail: string | null
       developmentPurpose: string
       keyFeatures: string
@@ -1752,6 +1789,8 @@ export namespace Prisma {
     readonly name: FieldRef<"Inquiry", 'String'>
     readonly contact: FieldRef<"Inquiry", 'String'>
     readonly projectType: FieldRef<"Inquiry", 'ProjectType'>
+    readonly status: FieldRef<"Inquiry", 'InquiryStatus'>
+    readonly adminMemo: FieldRef<"Inquiry", 'String'>
     readonly projectTypeDetail: FieldRef<"Inquiry", 'String'>
     readonly developmentPurpose: FieldRef<"Inquiry", 'String'>
     readonly keyFeatures: FieldRef<"Inquiry", 'String'>
@@ -2150,7 +2189,7 @@ export namespace Prisma {
 
   export type AdminUserMinAggregateOutputType = {
     id: number | null
-    email: string | null
+    userId: string | null
     name: string | null
     passwordHash: string | null
     isActive: boolean | null
@@ -2160,7 +2199,7 @@ export namespace Prisma {
 
   export type AdminUserMaxAggregateOutputType = {
     id: number | null
-    email: string | null
+    userId: string | null
     name: string | null
     passwordHash: string | null
     isActive: boolean | null
@@ -2170,7 +2209,7 @@ export namespace Prisma {
 
   export type AdminUserCountAggregateOutputType = {
     id: number
-    email: number
+    userId: number
     name: number
     passwordHash: number
     isActive: number
@@ -2190,7 +2229,7 @@ export namespace Prisma {
 
   export type AdminUserMinAggregateInputType = {
     id?: true
-    email?: true
+    userId?: true
     name?: true
     passwordHash?: true
     isActive?: true
@@ -2200,7 +2239,7 @@ export namespace Prisma {
 
   export type AdminUserMaxAggregateInputType = {
     id?: true
-    email?: true
+    userId?: true
     name?: true
     passwordHash?: true
     isActive?: true
@@ -2210,7 +2249,7 @@ export namespace Prisma {
 
   export type AdminUserCountAggregateInputType = {
     id?: true
-    email?: true
+    userId?: true
     name?: true
     passwordHash?: true
     isActive?: true
@@ -2307,7 +2346,7 @@ export namespace Prisma {
 
   export type AdminUserGroupByOutputType = {
     id: number
-    email: string
+    userId: string
     name: string
     passwordHash: string
     isActive: boolean
@@ -2336,7 +2375,7 @@ export namespace Prisma {
 
   export type AdminUserSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
-    email?: boolean
+    userId?: boolean
     name?: boolean
     passwordHash?: boolean
     isActive?: boolean
@@ -2346,7 +2385,7 @@ export namespace Prisma {
 
   export type AdminUserSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
-    email?: boolean
+    userId?: boolean
     name?: boolean
     passwordHash?: boolean
     isActive?: boolean
@@ -2356,7 +2395,7 @@ export namespace Prisma {
 
   export type AdminUserSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
-    email?: boolean
+    userId?: boolean
     name?: boolean
     passwordHash?: boolean
     isActive?: boolean
@@ -2366,7 +2405,7 @@ export namespace Prisma {
 
   export type AdminUserSelectScalar = {
     id?: boolean
-    email?: boolean
+    userId?: boolean
     name?: boolean
     passwordHash?: boolean
     isActive?: boolean
@@ -2374,14 +2413,14 @@ export namespace Prisma {
     updatedAt?: boolean
   }
 
-  export type AdminUserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "email" | "name" | "passwordHash" | "isActive" | "createdAt" | "updatedAt", ExtArgs["result"]["adminUser"]>
+  export type AdminUserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "name" | "passwordHash" | "isActive" | "createdAt" | "updatedAt", ExtArgs["result"]["adminUser"]>
 
   export type $AdminUserPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "AdminUser"
     objects: {}
     scalars: $Extensions.GetPayloadResult<{
       id: number
-      email: string
+      userId: string
       name: string
       passwordHash: string
       isActive: boolean
@@ -2811,7 +2850,7 @@ export namespace Prisma {
    */
   interface AdminUserFieldRefs {
     readonly id: FieldRef<"AdminUser", 'Int'>
-    readonly email: FieldRef<"AdminUser", 'String'>
+    readonly userId: FieldRef<"AdminUser", 'String'>
     readonly name: FieldRef<"AdminUser", 'String'>
     readonly passwordHash: FieldRef<"AdminUser", 'String'>
     readonly isActive: FieldRef<"AdminUser", 'Boolean'>
@@ -3203,6 +3242,8 @@ export namespace Prisma {
     name: 'name',
     contact: 'contact',
     projectType: 'projectType',
+    status: 'status',
+    adminMemo: 'adminMemo',
     projectTypeDetail: 'projectTypeDetail',
     developmentPurpose: 'developmentPurpose',
     keyFeatures: 'keyFeatures',
@@ -3220,7 +3261,7 @@ export namespace Prisma {
 
   export const AdminUserScalarFieldEnum: {
     id: 'id',
-    email: 'email',
+    userId: 'userId',
     name: 'name',
     passwordHash: 'passwordHash',
     isActive: 'isActive',
@@ -3303,6 +3344,20 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'InquiryStatus'
+   */
+  export type EnumInquiryStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'InquiryStatus'>
+    
+
+
+  /**
+   * Reference to a field of type 'InquiryStatus[]'
+   */
+  export type ListEnumInquiryStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'InquiryStatus[]'>
+    
+
+
+  /**
    * Reference to a field of type 'DateTime'
    */
   export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime'>
@@ -3349,6 +3404,8 @@ export namespace Prisma {
     name?: StringFilter<"Inquiry"> | string
     contact?: StringFilter<"Inquiry"> | string
     projectType?: EnumProjectTypeFilter<"Inquiry"> | $Enums.ProjectType
+    status?: EnumInquiryStatusFilter<"Inquiry"> | $Enums.InquiryStatus
+    adminMemo?: StringNullableFilter<"Inquiry"> | string | null
     projectTypeDetail?: StringNullableFilter<"Inquiry"> | string | null
     developmentPurpose?: StringFilter<"Inquiry"> | string
     keyFeatures?: StringFilter<"Inquiry"> | string
@@ -3367,6 +3424,8 @@ export namespace Prisma {
     name?: SortOrder
     contact?: SortOrder
     projectType?: SortOrder
+    status?: SortOrder
+    adminMemo?: SortOrderInput | SortOrder
     projectTypeDetail?: SortOrderInput | SortOrder
     developmentPurpose?: SortOrder
     keyFeatures?: SortOrder
@@ -3388,6 +3447,8 @@ export namespace Prisma {
     name?: StringFilter<"Inquiry"> | string
     contact?: StringFilter<"Inquiry"> | string
     projectType?: EnumProjectTypeFilter<"Inquiry"> | $Enums.ProjectType
+    status?: EnumInquiryStatusFilter<"Inquiry"> | $Enums.InquiryStatus
+    adminMemo?: StringNullableFilter<"Inquiry"> | string | null
     projectTypeDetail?: StringNullableFilter<"Inquiry"> | string | null
     developmentPurpose?: StringFilter<"Inquiry"> | string
     keyFeatures?: StringFilter<"Inquiry"> | string
@@ -3406,6 +3467,8 @@ export namespace Prisma {
     name?: SortOrder
     contact?: SortOrder
     projectType?: SortOrder
+    status?: SortOrder
+    adminMemo?: SortOrderInput | SortOrder
     projectTypeDetail?: SortOrderInput | SortOrder
     developmentPurpose?: SortOrder
     keyFeatures?: SortOrder
@@ -3432,6 +3495,8 @@ export namespace Prisma {
     name?: StringWithAggregatesFilter<"Inquiry"> | string
     contact?: StringWithAggregatesFilter<"Inquiry"> | string
     projectType?: EnumProjectTypeWithAggregatesFilter<"Inquiry"> | $Enums.ProjectType
+    status?: EnumInquiryStatusWithAggregatesFilter<"Inquiry"> | $Enums.InquiryStatus
+    adminMemo?: StringNullableWithAggregatesFilter<"Inquiry"> | string | null
     projectTypeDetail?: StringNullableWithAggregatesFilter<"Inquiry"> | string | null
     developmentPurpose?: StringWithAggregatesFilter<"Inquiry"> | string
     keyFeatures?: StringWithAggregatesFilter<"Inquiry"> | string
@@ -3449,7 +3514,7 @@ export namespace Prisma {
     OR?: AdminUserWhereInput[]
     NOT?: AdminUserWhereInput | AdminUserWhereInput[]
     id?: IntFilter<"AdminUser"> | number
-    email?: StringFilter<"AdminUser"> | string
+    userId?: StringFilter<"AdminUser"> | string
     name?: StringFilter<"AdminUser"> | string
     passwordHash?: StringFilter<"AdminUser"> | string
     isActive?: BoolFilter<"AdminUser"> | boolean
@@ -3459,7 +3524,7 @@ export namespace Prisma {
 
   export type AdminUserOrderByWithRelationInput = {
     id?: SortOrder
-    email?: SortOrder
+    userId?: SortOrder
     name?: SortOrder
     passwordHash?: SortOrder
     isActive?: SortOrder
@@ -3469,7 +3534,7 @@ export namespace Prisma {
 
   export type AdminUserWhereUniqueInput = Prisma.AtLeast<{
     id?: number
-    email?: string
+    userId?: string
     AND?: AdminUserWhereInput | AdminUserWhereInput[]
     OR?: AdminUserWhereInput[]
     NOT?: AdminUserWhereInput | AdminUserWhereInput[]
@@ -3478,11 +3543,11 @@ export namespace Prisma {
     isActive?: BoolFilter<"AdminUser"> | boolean
     createdAt?: DateTimeFilter<"AdminUser"> | Date | string
     updatedAt?: DateTimeFilter<"AdminUser"> | Date | string
-  }, "id" | "email">
+  }, "id" | "userId">
 
   export type AdminUserOrderByWithAggregationInput = {
     id?: SortOrder
-    email?: SortOrder
+    userId?: SortOrder
     name?: SortOrder
     passwordHash?: SortOrder
     isActive?: SortOrder
@@ -3500,7 +3565,7 @@ export namespace Prisma {
     OR?: AdminUserScalarWhereWithAggregatesInput[]
     NOT?: AdminUserScalarWhereWithAggregatesInput | AdminUserScalarWhereWithAggregatesInput[]
     id?: IntWithAggregatesFilter<"AdminUser"> | number
-    email?: StringWithAggregatesFilter<"AdminUser"> | string
+    userId?: StringWithAggregatesFilter<"AdminUser"> | string
     name?: StringWithAggregatesFilter<"AdminUser"> | string
     passwordHash?: StringWithAggregatesFilter<"AdminUser"> | string
     isActive?: BoolWithAggregatesFilter<"AdminUser"> | boolean
@@ -3513,6 +3578,8 @@ export namespace Prisma {
     name: string
     contact: string
     projectType: $Enums.ProjectType
+    status?: $Enums.InquiryStatus
+    adminMemo?: string | null
     projectTypeDetail?: string | null
     developmentPurpose: string
     keyFeatures: string
@@ -3531,6 +3598,8 @@ export namespace Prisma {
     name: string
     contact: string
     projectType: $Enums.ProjectType
+    status?: $Enums.InquiryStatus
+    adminMemo?: string | null
     projectTypeDetail?: string | null
     developmentPurpose: string
     keyFeatures: string
@@ -3548,6 +3617,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     contact?: StringFieldUpdateOperationsInput | string
     projectType?: EnumProjectTypeFieldUpdateOperationsInput | $Enums.ProjectType
+    status?: EnumInquiryStatusFieldUpdateOperationsInput | $Enums.InquiryStatus
+    adminMemo?: NullableStringFieldUpdateOperationsInput | string | null
     projectTypeDetail?: NullableStringFieldUpdateOperationsInput | string | null
     developmentPurpose?: StringFieldUpdateOperationsInput | string
     keyFeatures?: StringFieldUpdateOperationsInput | string
@@ -3566,6 +3637,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     contact?: StringFieldUpdateOperationsInput | string
     projectType?: EnumProjectTypeFieldUpdateOperationsInput | $Enums.ProjectType
+    status?: EnumInquiryStatusFieldUpdateOperationsInput | $Enums.InquiryStatus
+    adminMemo?: NullableStringFieldUpdateOperationsInput | string | null
     projectTypeDetail?: NullableStringFieldUpdateOperationsInput | string | null
     developmentPurpose?: StringFieldUpdateOperationsInput | string
     keyFeatures?: StringFieldUpdateOperationsInput | string
@@ -3584,6 +3657,8 @@ export namespace Prisma {
     name: string
     contact: string
     projectType: $Enums.ProjectType
+    status?: $Enums.InquiryStatus
+    adminMemo?: string | null
     projectTypeDetail?: string | null
     developmentPurpose: string
     keyFeatures: string
@@ -3601,6 +3676,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     contact?: StringFieldUpdateOperationsInput | string
     projectType?: EnumProjectTypeFieldUpdateOperationsInput | $Enums.ProjectType
+    status?: EnumInquiryStatusFieldUpdateOperationsInput | $Enums.InquiryStatus
+    adminMemo?: NullableStringFieldUpdateOperationsInput | string | null
     projectTypeDetail?: NullableStringFieldUpdateOperationsInput | string | null
     developmentPurpose?: StringFieldUpdateOperationsInput | string
     keyFeatures?: StringFieldUpdateOperationsInput | string
@@ -3619,6 +3696,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     contact?: StringFieldUpdateOperationsInput | string
     projectType?: EnumProjectTypeFieldUpdateOperationsInput | $Enums.ProjectType
+    status?: EnumInquiryStatusFieldUpdateOperationsInput | $Enums.InquiryStatus
+    adminMemo?: NullableStringFieldUpdateOperationsInput | string | null
     projectTypeDetail?: NullableStringFieldUpdateOperationsInput | string | null
     developmentPurpose?: StringFieldUpdateOperationsInput | string
     keyFeatures?: StringFieldUpdateOperationsInput | string
@@ -3632,7 +3711,7 @@ export namespace Prisma {
   }
 
   export type AdminUserCreateInput = {
-    email: string
+    userId: string
     name: string
     passwordHash: string
     isActive?: boolean
@@ -3642,7 +3721,7 @@ export namespace Prisma {
 
   export type AdminUserUncheckedCreateInput = {
     id?: number
-    email: string
+    userId: string
     name: string
     passwordHash: string
     isActive?: boolean
@@ -3651,7 +3730,7 @@ export namespace Prisma {
   }
 
   export type AdminUserUpdateInput = {
-    email?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
@@ -3661,7 +3740,7 @@ export namespace Prisma {
 
   export type AdminUserUncheckedUpdateInput = {
     id?: IntFieldUpdateOperationsInput | number
-    email?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
@@ -3671,7 +3750,7 @@ export namespace Prisma {
 
   export type AdminUserCreateManyInput = {
     id?: number
-    email: string
+    userId: string
     name: string
     passwordHash: string
     isActive?: boolean
@@ -3680,7 +3759,7 @@ export namespace Prisma {
   }
 
   export type AdminUserUpdateManyMutationInput = {
-    email?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
@@ -3690,7 +3769,7 @@ export namespace Prisma {
 
   export type AdminUserUncheckedUpdateManyInput = {
     id?: IntFieldUpdateOperationsInput | number
-    email?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
@@ -3746,6 +3825,13 @@ export namespace Prisma {
     not?: NestedEnumProjectTypeFilter<$PrismaModel> | $Enums.ProjectType
   }
 
+  export type EnumInquiryStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.InquiryStatus | EnumInquiryStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.InquiryStatus[] | ListEnumInquiryStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.InquiryStatus[] | ListEnumInquiryStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumInquiryStatusFilter<$PrismaModel> | $Enums.InquiryStatus
+  }
+
   export type StringNullableListFilter<$PrismaModel = never> = {
     equals?: string[] | ListStringFieldRefInput<$PrismaModel> | null
     has?: string | StringFieldRefInput<$PrismaModel> | null
@@ -3776,6 +3862,8 @@ export namespace Prisma {
     name?: SortOrder
     contact?: SortOrder
     projectType?: SortOrder
+    status?: SortOrder
+    adminMemo?: SortOrder
     projectTypeDetail?: SortOrder
     developmentPurpose?: SortOrder
     keyFeatures?: SortOrder
@@ -3798,6 +3886,8 @@ export namespace Prisma {
     name?: SortOrder
     contact?: SortOrder
     projectType?: SortOrder
+    status?: SortOrder
+    adminMemo?: SortOrder
     projectTypeDetail?: SortOrder
     developmentPurpose?: SortOrder
     keyFeatures?: SortOrder
@@ -3815,6 +3905,8 @@ export namespace Prisma {
     name?: SortOrder
     contact?: SortOrder
     projectType?: SortOrder
+    status?: SortOrder
+    adminMemo?: SortOrder
     projectTypeDetail?: SortOrder
     developmentPurpose?: SortOrder
     keyFeatures?: SortOrder
@@ -3892,6 +3984,16 @@ export namespace Prisma {
     _max?: NestedEnumProjectTypeFilter<$PrismaModel>
   }
 
+  export type EnumInquiryStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.InquiryStatus | EnumInquiryStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.InquiryStatus[] | ListEnumInquiryStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.InquiryStatus[] | ListEnumInquiryStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumInquiryStatusWithAggregatesFilter<$PrismaModel> | $Enums.InquiryStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumInquiryStatusFilter<$PrismaModel>
+    _max?: NestedEnumInquiryStatusFilter<$PrismaModel>
+  }
+
   export type DateTimeWithAggregatesFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
@@ -3913,7 +4015,7 @@ export namespace Prisma {
 
   export type AdminUserCountOrderByAggregateInput = {
     id?: SortOrder
-    email?: SortOrder
+    userId?: SortOrder
     name?: SortOrder
     passwordHash?: SortOrder
     isActive?: SortOrder
@@ -3927,7 +4029,7 @@ export namespace Prisma {
 
   export type AdminUserMaxOrderByAggregateInput = {
     id?: SortOrder
-    email?: SortOrder
+    userId?: SortOrder
     name?: SortOrder
     passwordHash?: SortOrder
     isActive?: SortOrder
@@ -3937,7 +4039,7 @@ export namespace Prisma {
 
   export type AdminUserMinOrderByAggregateInput = {
     id?: SortOrder
-    email?: SortOrder
+    userId?: SortOrder
     name?: SortOrder
     passwordHash?: SortOrder
     isActive?: SortOrder
@@ -3971,6 +4073,10 @@ export namespace Prisma {
 
   export type EnumProjectTypeFieldUpdateOperationsInput = {
     set?: $Enums.ProjectType
+  }
+
+  export type EnumInquiryStatusFieldUpdateOperationsInput = {
+    set?: $Enums.InquiryStatus
   }
 
   export type InquiryUpdateattachmentUrlsInput = {
@@ -4038,6 +4144,13 @@ export namespace Prisma {
     in?: $Enums.ProjectType[] | ListEnumProjectTypeFieldRefInput<$PrismaModel>
     notIn?: $Enums.ProjectType[] | ListEnumProjectTypeFieldRefInput<$PrismaModel>
     not?: NestedEnumProjectTypeFilter<$PrismaModel> | $Enums.ProjectType
+  }
+
+  export type NestedEnumInquiryStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.InquiryStatus | EnumInquiryStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.InquiryStatus[] | ListEnumInquiryStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.InquiryStatus[] | ListEnumInquiryStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumInquiryStatusFilter<$PrismaModel> | $Enums.InquiryStatus
   }
 
   export type NestedDateTimeFilter<$PrismaModel = never> = {
@@ -4131,6 +4244,16 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumProjectTypeFilter<$PrismaModel>
     _max?: NestedEnumProjectTypeFilter<$PrismaModel>
+  }
+
+  export type NestedEnumInquiryStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.InquiryStatus | EnumInquiryStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.InquiryStatus[] | ListEnumInquiryStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.InquiryStatus[] | ListEnumInquiryStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumInquiryStatusWithAggregatesFilter<$PrismaModel> | $Enums.InquiryStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumInquiryStatusFilter<$PrismaModel>
+    _max?: NestedEnumInquiryStatusFilter<$PrismaModel>
   }
 
   export type NestedDateTimeWithAggregatesFilter<$PrismaModel = never> = {

@@ -6,7 +6,7 @@ import { requireAdminAuth } from '../middleware/adminAuth.js'
 import { prisma } from '../lib/prisma.js'
 
 const loginSchema = z.object({
-  email: z.string().trim().email(),
+  userId: z.string().trim().min(1).max(50),
   password: z.string().min(1),
 })
 
@@ -37,18 +37,18 @@ adminAuthRouter.post('/login', async (req, res) => {
       })
     }
 
-    const { email, password } = parsed.data
+    const { userId, password } = parsed.data
     const adminUser = await prisma.adminUser.findUnique({
-      where: { email: email.toLowerCase() },
+      where: { userId },
     })
 
     if (!adminUser || !adminUser.isActive) {
-      return res.status(401).json({ message: '이메일 또는 비밀번호가 올바르지 않습니다.' })
+      return res.status(401).json({ message: '아이디 또는 비밀번호가 올바르지 않습니다.' })
     }
 
     const isMatch = await bcrypt.compare(password, adminUser.passwordHash)
     if (!isMatch) {
-      return res.status(401).json({ message: '이메일 또는 비밀번호가 올바르지 않습니다.' })
+      return res.status(401).json({ message: '아이디 또는 비밀번호가 올바르지 않습니다.' })
     }
 
     const jwtSecret = process.env.ADMIN_JWT_SECRET
@@ -59,7 +59,7 @@ adminAuthRouter.post('/login', async (req, res) => {
     const token = jwt.sign(
       {
         sub: String(adminUser.id),
-        email: adminUser.email,
+        userId: adminUser.userId,
         role: 'admin',
       },
       jwtSecret,
@@ -70,7 +70,7 @@ adminAuthRouter.post('/login', async (req, res) => {
       token,
       adminUser: {
         id: adminUser.id,
-        email: adminUser.email,
+        userId: adminUser.userId,
         name: adminUser.name,
       },
     })

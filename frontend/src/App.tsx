@@ -186,7 +186,7 @@ function App() {
     <Container maxWidth="md" sx={{ py: { xs: 5 } }}>
       <Stack spacing={2} sx={{ mb: 4, alignItems: 'center', textAlign: 'center' }}>
         <Typography variant="h4" component="h1" sx={{ fontWeight: 700 }}>
-          개발 문의하기
+          개발 견적 문의하기
         </Typography>
         <Typography color="text.secondary">
           아래 신청서를 작성하고 무료로 견적을 받아보세요.

@@ -9,11 +9,13 @@ datasource db {
 }
 
 model Inquiry {
-  id                 Int         @id @default(autoincrement())
+  id                 Int           @id @default(autoincrement())
   companyName        String?
   name               String
   contact            String
   projectType        ProjectType
+  status             InquiryStatus @default(WAITING)
+  adminMemo          String?
   projectTypeDetail  String?
   developmentPurpose String
   keyFeatures        String
@@ -22,8 +24,14 @@ model Inquiry {
   budget             String
   inquiryDetails     String
   attachmentUrls     String[]
-  createdAt          DateTime    @default(now())
-  updatedAt          DateTime    @updatedAt
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+}
+
+enum InquiryStatus {
+  WAITING
+  IN_PROGRESS
+  COMPLETED
 }
 
 enum ProjectType {
@@ -37,7 +45,7 @@ enum ProjectType {
 
 model AdminUser {
   id           Int      @id @default(autoincrement())
-  email        String   @unique
+  userId       String   @unique
   name         String
   passwordHash String
   isActive     Boolean  @default(true)

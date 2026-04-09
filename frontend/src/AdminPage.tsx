@@ -5,16 +5,23 @@ import {
   Card,
   CardContent,
   Chip,
+  CircularProgress,
   Container,
   Divider,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
   Stack,
   TextField,
   Typography,
 } from '@mui/material'
+import { DataGrid } from '@mui/x-data-grid'
+import type { GridColDef, GridRenderCellParams } from '@mui/x-data-grid'
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 
@@ -23,7 +30,7 @@ const ADMIN_TOKEN_KEY = 'admin_access_token'
 
 type AdminUser = {
   id: number
-  email: string
+  userId: string
   name: string
 }
 
@@ -33,6 +40,8 @@ type InquiryListItem = {
   name: string
   contact: string
   projectType: string
+  status: InquiryStatus
+  adminMemo: string | null
   expectedTimeline: string
   budget: string
   createdAt: string
@@ -48,14 +57,27 @@ type InquiryDetail = InquiryListItem & {
 }
 
 type AdminMenuKey = 'inquiries' | 'settings'
+type InquiryStatus = 'WAITING' | 'IN_PROGRESS' | 'COMPLETED'
+
+const INQUIRY_STATUS_LABELS: Record<InquiryStatus, string> = {
+  WAITING: '대기',
+  IN_PROGRESS: '진행중',
+  COMPLETED: '완료',
+}
+
+const INQUIRY_STATUS_COLORS: Record<InquiryStatus, 'default' | 'warning' | 'info' | 'success'> = {
+  WAITING: 'warning',
+  IN_PROGRESS: 'info',
+  COMPLETED: 'success',
+}
 
 const withAuthHeader = (token: string) => ({
   Authorization: `Bearer ${token}`,
 })
 
 export default function AdminPage() {
-  const [email, setEmail] = useState('admin@example.com')
-  const [password, setPassword] = useState('ChangeMe123!')
+  const [userId, setUserId] = useState('')
+  const [password, setPassword] = useState('')
   const [token, setToken] = useState<string | null>(
     () => localStorage.getItem(ADMIN_TOKEN_KEY),
   )
@@ -72,6 +94,9 @@ export default function AdminPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [isPasswordChanging, setIsPasswordChanging] = useState(false)
   const [isDetailLoading, setIsDetailLoading] = useState(false)
+  const [isManagementSaving, setIsManagementSaving] = useState(false)
+  const [managementStatus, setManagementStatus] = useState<InquiryStatus>('WAITING')
+  const [managementMemo, setManagementMemo] = useState('')
 
   const logout = () => {
     localStorage.removeItem(ADMIN_TOKEN_KEY)
@@ -132,10 +157,64 @@ export default function AdminPage() {
       }
       const data = (await response.json()) as InquiryDetail
       setSelected(data)
+      setManagementStatus(data.status)
+      setManagementMemo(data.adminMemo ?? '')
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : '오류가 발생했습니다.')
     } finally {
       setIsDetailLoading(false)
+    }
+  }
+
+  const handleSaveInquiryManagement = async () => {
+    if (!token || !selected) {
+      return
+    }
+
+    setErrorMessage('')
+    setIsManagementSaving(true)
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/admin/inquiries/${selected.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          ...withAuthHeader(token),
+        },
+        body: JSON.stringify({
+          status: managementStatus,
+          adminMemo: managementMemo.trim() || null,
+        }),
+      })
+
+      if (response.status === 401) {
+        logout()
+        throw new Error('세션이 만료되었습니다. 다시 로그인해주세요.')
+      }
+
+      if (!response.ok) {
+        const payload = await response.json().catch(() => null)
+        throw new Error(payload?.message ?? '문의 관리 정보 저장에 실패했습니다.')
+      }
+
+      const updated = (await response.json()) as InquiryDetail
+      setSelected(updated)
+      setManagementStatus(updated.status)
+      setManagementMemo(updated.adminMemo ?? '')
+      setItems((prev) =>
+        prev.map((item) =>
+          item.id === updated.id
+            ? {
+                ...item,
+                status: updated.status,
+                adminMemo: updated.adminMemo,
+              }
+            : item,
+        ),
+      )
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : '문의 관리 정보 저장 중 오류가 발생했습니다.')
+    } finally {
+      setIsManagementSaving(false)
     }
   }
 
@@ -147,7 +226,7 @@ export default function AdminPage() {
       const response = await fetch(`${API_BASE_URL}/api/admin/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ userId, password }),
       })
 
       if (!response.ok) {
@@ -228,6 +307,76 @@ export default function AdminPage() {
     })()
   }, [token])
 
+  const inquiryColumns: GridColDef<InquiryListItem>[] = [
+    { field: 'name', headerName: '이름', minWidth: 120, flex: 0.9 },
+    {
+      field: 'companyName',
+      headerName: '회사명',
+      minWidth: 140,
+      flex: 1.1,
+      valueGetter: (_value, row) => row.companyName ?? '회사명 미기재',
+    },
+    { field: 'contact', headerName: '연락처', minWidth: 170, flex: 1.1 },
+    {
+      field: 'status',
+      headerName: '상태',
+      minWidth: 120,
+      flex: 0.8,
+      renderCell: (params: GridRenderCellParams<InquiryListItem, InquiryStatus>) => (
+        <Chip
+          size="small"
+          label={INQUIRY_STATUS_LABELS[params.value ?? 'WAITING']}
+          color={INQUIRY_STATUS_COLORS[params.value ?? 'WAITING']}
+        />
+      ),
+    },
+    {
+      field: 'projectType',
+      headerName: '유형',
+      minWidth: 130,
+      flex: 0.9,
+      renderCell: (params: GridRenderCellParams<InquiryListItem, string>) => (
+        <Chip
+          size="small"
+          label={params.value ?? '-'}
+          title={params.value ?? '-'}
+          sx={{ maxWidth: '100%', '& .MuiChip-label': { overflow: 'hidden', textOverflow: 'ellipsis' } }}
+        />
+      ),
+    },
+    {
+      field: 'adminMemo',
+      headerName: '메모',
+      minWidth: 180,
+      flex: 1.2,
+      valueGetter: (value) => value ?? '-',
+    },
+    { field: 'expectedTimeline', headerName: '일정', minWidth: 130, flex: 1 },
+    { field: 'budget', headerName: '예산', minWidth: 130, flex: 1 },
+    {
+      field: 'createdAt',
+      headerName: '접수일',
+      minWidth: 120,
+      flex: 0.8,
+      valueGetter: (value) => new Date(value as string).toLocaleDateString('ko-KR'),
+    },
+    {
+      field: 'actions',
+      headerName: '상세',
+      sortable: false,
+      filterable: false,
+      minWidth: 100,
+      width: 100,
+      align: 'right',
+      headerAlign: 'right',
+      renderCell: (params: GridRenderCellParams<InquiryListItem>) => (
+        <Button size="small" variant="outlined" onClick={() => fetchDetail(params.row.id)}>
+          보기
+        </Button>
+      ),
+    },
+  ]
+
   if (!token) {
     return (
       <Container maxWidth="sm" sx={{ py: 8 }}>
@@ -239,10 +388,10 @@ export default function AdminPage() {
               </Typography>
               {errorMessage ? <Alert severity="error">{errorMessage}</Alert> : null}
               <TextField
-                label="이메일"
+                label="아이디"
                 fullWidth
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
+                value={userId}
+                onChange={(event) => setUserId(event.target.value)}
               />
               <TextField
                 label="비밀번호"
@@ -270,10 +419,10 @@ export default function AdminPage() {
       >
         <Stack spacing={0.5}>
           <Typography variant="h5" sx={{ fontWeight: 700 }}>
-            관리자 문의 조회
+            관리자페이지
           </Typography>
           <Typography color="text.secondary">
-            {adminUser ? `${adminUser.name} (${adminUser.email})` : '관리자'}
+            {adminUser ? `${adminUser.name} (${adminUser.userId})` : '관리자'}
           </Typography>
         </Stack>
         <Button variant="outlined" color="inherit" onClick={logout}>
@@ -284,7 +433,15 @@ export default function AdminPage() {
       {errorMessage ? <Alert severity="error" sx={{ mb: 2 }}>{errorMessage}</Alert> : null}
 
       <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} sx={{ alignItems: 'stretch' }}>
-        <Card variant="outlined" sx={{ width: { xs: '100%', md: 260 }, height: 'fit-content' }}>
+        <Card
+          variant="outlined"
+          sx={{
+            width: { xs: '100%', md: 260 },
+            minWidth: { xs: '100%', md: 220 },
+            flexShrink: 0,
+            height: 'fit-content',
+          }}
+        >
           <CardContent>
             <Stack spacing={1}>
               <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
@@ -310,7 +467,7 @@ export default function AdminPage() {
           </CardContent>
         </Card>
 
-        <Box sx={{ flex: 1 }}>
+        <Box sx={{ flex: 1, minWidth: 0 }}>
           {activeMenu === 'inquiries' ? (
             <Card variant="outlined">
               <CardContent>
@@ -319,48 +476,41 @@ export default function AdminPage() {
                     문의 목록
                   </Typography>
                   {isDetailLoading ? <Alert severity="info">문의 상세를 불러오는 중입니다.</Alert> : null}
-                {items.map((item) => (
-                  <Button
-                    key={item.id}
-                    variant="text"
-                    color="inherit"
-                    onClick={() => fetchDetail(item.id)}
-                    sx={{
-                      justifyContent: 'space-between',
-                      textTransform: 'none',
-                      border: '1px solid',
-                      borderColor: 'divider',
-                      borderRadius: 1.5,
-                      px: 1.5,
-                      py: 1.2,
-                    }}
-                  >
-                    <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center', minWidth: 0 }}>
-                      <Typography sx={{ fontWeight: 700, whiteSpace: 'nowrap' }}>{item.name}</Typography>
-                      <Typography variant="body2" color="text.secondary" noWrap>
-                        {item.companyName ?? '회사명 미기재'}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary" noWrap>
-                        {item.contact}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary" noWrap>
-                        일정 {item.expectedTimeline}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary" noWrap>
-                        예산 {item.budget}
-                      </Typography>
-                    </Stack>
-                    <Stack direction="row" spacing={1} sx={{ alignItems: 'center', ml: 2, flexShrink: 0 }}>
-                      <Chip size="small" label={item.projectType} />
-                      <Typography variant="caption" color="text.secondary">
-                        {new Date(item.createdAt).toLocaleDateString('ko-KR')}
-                      </Typography>
-                    </Stack>
-                  </Button>
-                ))}
-                {!items.length ? (
-                  <Alert severity="info">등록된 문의가 없습니다.</Alert>
-                ) : null}
+                  {items.length ? (
+                    <Box sx={{ width: '100%', overflowX: 'auto' }}>
+                        <DataGrid
+                          rows={items}
+                          columns={inquiryColumns}
+                          getRowId={(row) => row.id}
+                          disableRowSelectionOnClick
+                          initialState={{
+                            pagination: { paginationModel: { page: 0, pageSize: 10 } },
+                          }}
+                          pageSizeOptions={[10, 30, 50]}
+                          getRowClassName={(params) =>
+                            selected?.id === params.row.id ? 'selected-inquiry-row' : ''
+                          }
+                          sx={{
+                            '& .MuiDataGrid-cell': {
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                            },
+                            '& .MuiDataGrid-columnHeaderTitle': {
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                              fontWeight: 700,
+                            },
+                            '& .selected-inquiry-row': {
+                              bgcolor: 'action.selected',
+                            },
+                          }}
+                        />
+                    </Box>
+                  ) : (
+                    <Alert severity="info">등록된 문의가 없습니다.</Alert>
+                  )}
                 </Stack>
               </CardContent>
             </Card>
@@ -426,6 +576,38 @@ export default function AdminPage() {
               <Typography><strong>이름:</strong> {selected.name}</Typography>
               <Typography><strong>연락처:</strong> {selected.contact}</Typography>
               <Typography><strong>회사명:</strong> {selected.companyName ?? '-'}</Typography>
+              <Stack direction={{ xs: 'column', md: 'row' }} spacing={1.5}>
+                <FormControl fullWidth size="small">
+                  <InputLabel id="inquiry-status-label">상태</InputLabel>
+                  <Select
+                    labelId="inquiry-status-label"
+                    label="상태"
+                    value={managementStatus}
+                    onChange={(event) => setManagementStatus(event.target.value as InquiryStatus)}
+                  >
+                    <MenuItem value="WAITING">대기</MenuItem>
+                    <MenuItem value="IN_PROGRESS">진행중</MenuItem>
+                    <MenuItem value="COMPLETED">완료</MenuItem>
+                  </Select>
+                </FormControl>
+                <Button
+                  variant="contained"
+                  onClick={handleSaveInquiryManagement}
+                  disabled={isManagementSaving}
+                  sx={{ minWidth: 120 }}
+                >
+                  {isManagementSaving ? <CircularProgress size={18} color="inherit" /> : '관리 정보 저장'}
+                </Button>
+              </Stack>
+              <TextField
+                label="관리자 메모"
+                multiline
+                minRows={3}
+                fullWidth
+                value={managementMemo}
+                onChange={(event) => setManagementMemo(event.target.value)}
+                helperText="내부 관리용 메모입니다."
+              />
               <Typography><strong>유형:</strong> {selected.projectType}</Typography>
               <Typography><strong>유형 상세:</strong> {selected.projectTypeDetail ?? '-'}</Typography>
               <Typography><strong>개발 목적:</strong> {selected.developmentPurpose}</Typography>
