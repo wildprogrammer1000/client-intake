@@ -1,6 +1,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { CssBaseline, ThemeProvider, createTheme } from '@mui/material'
+import './assets/fonts/fonts.css'
 import './index.css'
 import App from './App.tsx'
 
@@ -10,6 +11,9 @@ const theme = createTheme({
     primary: {
       main: '#1976d2',
     },
+  },
+  typography: {
+    fontFamily: 'var(--app-font-family)',
   },
 })
 

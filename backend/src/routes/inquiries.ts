@@ -1,5 +1,6 @@
 import { Router } from 'express'
 import { z } from 'zod'
+import { sendInquiryNotificationEmail } from '../lib/inquiryNotification.js'
 import { prisma } from '../lib/prisma.js'
 
 const createInquirySchema = z.object({
@@ -54,6 +55,12 @@ inquiryRouter.post('/', async (req, res) => {
         attachmentUrls: payload.attachmentUrls,
       },
     })
+
+    try {
+      await sendInquiryNotificationEmail(inquiry)
+    } catch (mailError) {
+      console.error('[inquiryNotification] 문의 알림 메일 전송 실패', mailError)
+    }
 
     return res.status(201).json({
       id: inquiry.id,
