@@ -186,10 +186,10 @@ function App() {
     <Container maxWidth="md" sx={{ py: { xs: 5, md: 8 } }}>
       <Stack spacing={2} sx={{ mb: 4 }}>
         <Typography variant="h4" component="h1" sx={{ fontWeight: 700 }}>
-          외주 개발 문의
+          개발 문의하기
         </Typography>
         <Typography color="text.secondary">
-          아래 항목을 작성해주시면 검토 후 빠르게 연락드리겠습니다.
+          아래 신청서를 작성하고 무료로 견적을 받아보세요.
         </Typography>
       </Stack>
 
