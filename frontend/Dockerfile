@@ -9,11 +9,14 @@ COPY frontend/ ./
 
 RUN npm run build
 
-FROM nginx:1.27-alpine AS runner
+FROM node:22-alpine AS runner
 
-COPY frontend/nginx.conf /etc/nginx/conf.d/default.conf
-COPY --from=builder /app/dist /usr/share/nginx/html
+WORKDIR /app
 
-EXPOSE 80
+RUN npm install -g serve@14
 
-CMD ["nginx", "-g", "daemon off;"]
+COPY --from=builder /app/dist ./dist
+
+EXPOSE 8080
+
+CMD ["serve", "-s", "dist", "-l", "tcp://0.0.0.0:8080"]
