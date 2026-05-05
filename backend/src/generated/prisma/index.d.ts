@@ -40,9 +40,8 @@ export type InquiryStatus = (typeof InquiryStatus)[keyof typeof InquiryStatus]
 export const ProjectType: {
   WEBSITE: 'WEBSITE',
   MOBILE_APP: 'MOBILE_APP',
-  ADMIN_SYSTEM: 'ADMIN_SYSTEM',
-  SHOPPING_MALL: 'SHOPPING_MALL',
   GAME: 'GAME',
+  SERVICE_PROGRAM: 'SERVICE_PROGRAM',
   OTHER: 'OTHER'
 };
 

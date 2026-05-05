@@ -37,9 +37,8 @@ enum InquiryStatus {
 enum ProjectType {
   WEBSITE
   MOBILE_APP
-  ADMIN_SYSTEM
-  SHOPPING_MALL
   GAME
+  SERVICE_PROGRAM
   OTHER
 }
 

@@ -146,9 +146,8 @@ exports.InquiryStatus = exports.$Enums.InquiryStatus = {
 exports.ProjectType = exports.$Enums.ProjectType = {
   WEBSITE: 'WEBSITE',
   MOBILE_APP: 'MOBILE_APP',
-  ADMIN_SYSTEM: 'ADMIN_SYSTEM',
-  SHOPPING_MALL: 'SHOPPING_MALL',
   GAME: 'GAME',
+  SERVICE_PROGRAM: 'SERVICE_PROGRAM',
   OTHER: 'OTHER'
 };
 
@@ -204,8 +203,8 @@ const config = {
       }
     }
   },
-  "inlineSchema": "generator client {\n  provider = \"prisma-client-js\"\n  output   = \"../src/generated/prisma\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel Inquiry {\n  id                 Int           @id @default(autoincrement())\n  companyName        String?\n  name               String\n  contact            String\n  projectType        ProjectType\n  status             InquiryStatus @default(WAITING)\n  adminMemo          String?\n  projectTypeDetail  String?\n  developmentPurpose String\n  keyFeatures        String\n  referenceLinks     String?\n  expectedTimeline   String\n  budget             String\n  inquiryDetails     String\n  attachmentUrls     String[]\n  createdAt          DateTime      @default(now())\n  updatedAt          DateTime      @updatedAt\n}\n\nenum InquiryStatus {\n  WAITING\n  IN_PROGRESS\n  COMPLETED\n}\n\nenum ProjectType {\n  WEBSITE\n  MOBILE_APP\n  ADMIN_SYSTEM\n  SHOPPING_MALL\n  GAME\n  OTHER\n}\n\nmodel AdminUser {\n  id           Int      @id @default(autoincrement())\n  userId       String   @unique\n  name         String\n  passwordHash String\n  isActive     Boolean  @default(true)\n  createdAt    DateTime @default(now())\n  updatedAt    DateTime @updatedAt\n}\n",
-  "inlineSchemaHash": "1946a02817f3e21bb721906ff4a86d06b7f8e30c2342826fc804ab19110631b3",
+  "inlineSchema": "generator client {\n  provider = \"prisma-client-js\"\n  output   = \"../src/generated/prisma\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel Inquiry {\n  id                 Int           @id @default(autoincrement())\n  companyName        String?\n  name               String\n  contact            String\n  projectType        ProjectType\n  status             InquiryStatus @default(WAITING)\n  adminMemo          String?\n  projectTypeDetail  String?\n  developmentPurpose String\n  keyFeatures        String\n  referenceLinks     String?\n  expectedTimeline   String\n  budget             String\n  inquiryDetails     String\n  attachmentUrls     String[]\n  createdAt          DateTime      @default(now())\n  updatedAt          DateTime      @updatedAt\n}\n\nenum InquiryStatus {\n  WAITING\n  IN_PROGRESS\n  COMPLETED\n}\n\nenum ProjectType {\n  WEBSITE\n  MOBILE_APP\n  GAME\n  SERVICE_PROGRAM\n  OTHER\n}\n\nmodel AdminUser {\n  id           Int      @id @default(autoincrement())\n  userId       String   @unique\n  name         String\n  passwordHash String\n  isActive     Boolean  @default(true)\n  createdAt    DateTime @default(now())\n  updatedAt    DateTime @updatedAt\n}\n",
+  "inlineSchemaHash": "0a729b984e1fcdc8d57c1f5cc8b4d454725fce4a2739eda117e2158f0e3b8102",
   "copyEngine": true
 }
 config.dirname = '/'

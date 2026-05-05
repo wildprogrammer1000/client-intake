@@ -4,17 +4,9 @@ import { sendInquiryNotificationEmail } from '../lib/inquiryNotification.js'
 import { prisma } from '../lib/prisma.js'
 
 const createInquirySchema = z.object({
-  companyName: z.string().trim().max(200).optional(),
   name: z.string().trim().min(1).max(100),
   contact: z.string().trim().min(1).max(200),
-  projectType: z.enum([
-    'WEBSITE',
-    'MOBILE_APP',
-    'ADMIN_SYSTEM',
-    'SHOPPING_MALL',
-    'GAME',
-    'OTHER',
-  ]),
+  projectType: z.enum(['WEBSITE', 'MOBILE_APP', 'GAME', 'SERVICE_PROGRAM', 'OTHER']),
   projectTypeDetail: z.string().trim().max(200).optional(),
   developmentPurpose: z.string().trim().min(1).max(2000),
   keyFeatures: z.string().trim().min(1).max(4000),
@@ -41,7 +33,6 @@ inquiryRouter.post('/', async (req, res) => {
     const payload = result.data
     const inquiry = await prisma.inquiry.create({
       data: {
-        companyName: payload.companyName,
         name: payload.name,
         contact: payload.contact,
         projectType: payload.projectType,

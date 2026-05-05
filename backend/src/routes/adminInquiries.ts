@@ -7,7 +7,7 @@ const listQuerySchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
   pageSize: z.coerce.number().int().min(1).max(100).default(20),
   projectType: z
-    .enum(['WEBSITE', 'MOBILE_APP', 'ADMIN_SYSTEM', 'SHOPPING_MALL', 'GAME', 'OTHER'])
+    .enum(['WEBSITE', 'MOBILE_APP', 'GAME', 'SERVICE_PROGRAM', 'OTHER'])
     .optional(),
   status: z.enum(['WAITING', 'IN_PROGRESS', 'COMPLETED']).optional(),
   keyword: z.string().trim().max(200).optional(),

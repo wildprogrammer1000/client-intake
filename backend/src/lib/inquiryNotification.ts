@@ -1,29 +1,11 @@
 import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses'
-import type { ProjectType } from '../generated/prisma/index.js'
-
-type InquiryNotificationPayload = {
-  id: number
-  companyName: string | null
-  name: string
-  contact: string
-  projectType: ProjectType
-  projectTypeDetail: string | null
-  developmentPurpose: string
-  keyFeatures: string
-  referenceLinks: string | null
-  expectedTimeline: string
-  budget: string
-  inquiryDetails: string
-  attachmentUrls: string[]
-  createdAt: Date
-}
+import type { Inquiry, ProjectType } from '../generated/prisma/index.js'
 
 const projectTypeLabelMap: Record<ProjectType, string> = {
   WEBSITE: '웹사이트',
   MOBILE_APP: '모바일 앱',
-  ADMIN_SYSTEM: '관리자 시스템',
-  SHOPPING_MALL: '쇼핑몰',
   GAME: '게임',
+  SERVICE_PROGRAM: '서비스 프로그램',
   OTHER: '기타',
 }
 
@@ -57,7 +39,7 @@ const formatDateTime = (date: Date) => {
   }).format(date)
 }
 
-export const sendInquiryNotificationEmail = async (payload: InquiryNotificationPayload) => {
+export const sendInquiryNotificationEmail = async (payload: Inquiry) => {
   const fromAddress = process.env.AWS_SES_FROM_EMAIL
   const toAddress = process.env.ADMIN_NOTIFICATION_EMAIL
 
@@ -73,7 +55,6 @@ export const sendInquiryNotificationEmail = async (payload: InquiryNotificationP
     payload.attachmentUrls.length > 0 ? payload.attachmentUrls.join('\n') : '첨부 파일 없음'
   const referenceLinks = payload.referenceLinks ?? '-'
   const projectTypeDetail = payload.projectTypeDetail ?? '-'
-  const companyName = payload.companyName ?? '-'
   const createdAt = formatDateTime(payload.createdAt)
   const subject = `[문의 접수] ${payload.name} (${projectTypeLabel})`
 
@@ -82,7 +63,6 @@ export const sendInquiryNotificationEmail = async (payload: InquiryNotificationP
     '',
     `문의 ID: ${payload.id}`,
     `접수 시각: ${createdAt}`,
-    `회사명: ${companyName}`,
     `이름: ${payload.name}`,
     `연락처: ${payload.contact}`,
     `프로젝트 유형: ${projectTypeLabel}`,
@@ -101,7 +81,6 @@ export const sendInquiryNotificationEmail = async (payload: InquiryNotificationP
     <ul>
       <li><strong>문의 ID:</strong> ${payload.id}</li>
       <li><strong>접수 시각:</strong> ${escapeHtml(createdAt)}</li>
-      <li><strong>회사명:</strong> ${escapeHtml(companyName)}</li>
       <li><strong>이름:</strong> ${escapeHtml(payload.name)}</li>
       <li><strong>연락처:</strong> ${escapeHtml(payload.contact)}</li>
       <li><strong>프로젝트 유형:</strong> ${escapeHtml(projectTypeLabel)}</li>

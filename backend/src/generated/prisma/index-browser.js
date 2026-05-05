@@ -168,9 +168,8 @@ exports.Prisma.NullsOrder = {
 exports.ProjectType = exports.$Enums.ProjectType = {
   WEBSITE: 'WEBSITE',
   MOBILE_APP: 'MOBILE_APP',
-  ADMIN_SYSTEM: 'ADMIN_SYSTEM',
-  SHOPPING_MALL: 'SHOPPING_MALL',
   GAME: 'GAME',
+  SERVICE_PROGRAM: 'SERVICE_PROGRAM',
   OTHER: 'OTHER'
 };
 
