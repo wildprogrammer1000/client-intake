@@ -5,6 +5,10 @@ export const INQUIRY_PATH = {
   issueResolution: '/inquiry/issue-resolution',
 } as const
 
+export const EXTERNAL_CONTACT = {
+  kakaoOpenChat: 'https://open.kakao.com/me/wildsoft',
+} as const
+
 /** 라우트·폼에서 쓰는 문의 유형 키 */
 export type InquiryServiceKind = 'new-service' | 'feature-extension' | 'issue-resolution'
 
