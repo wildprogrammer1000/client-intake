@@ -22,7 +22,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
-import { DataGrid } from '@mui/x-data-grid'
+import { DataGrid, GridToolbar } from '@mui/x-data-grid'
 import type { GridColDef, GridRenderCellParams } from '@mui/x-data-grid'
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
@@ -554,8 +554,8 @@ export default function AdminPage() {
       headerName: '견적(원)',
       minWidth: 110,
       flex: 0.7,
-      valueGetter: (value) =>
-        value != null && value !== '' ? Number(value).toLocaleString('ko-KR') : '-',
+      valueFormatter: (value: number | null) =>
+        value != null ? Number(value).toLocaleString('ko-KR') : '-',
     },
     {
       field: 'tags',
@@ -570,7 +570,7 @@ export default function AdminPage() {
       headerName: '접수일',
       minWidth: 120,
       flex: 0.8,
-      valueGetter: (value) => new Date(value as string).toLocaleDateString('ko-KR'),
+      valueFormatter: (value: string) => new Date(value).toLocaleDateString('ko-KR'),
     },
     {
       field: 'actions',
@@ -704,8 +704,18 @@ export default function AdminPage() {
                           columns={inquiryColumns}
                           getRowId={(row) => row.id}
                           disableRowSelectionOnClick
+                          slots={{ toolbar: GridToolbar }}
+                          slotProps={{
+                            toolbar: {
+                              showQuickFilter: true,
+                              quickFilterProps: { debounceMs: 300 },
+                            },
+                          }}
                           initialState={{
                             pagination: { paginationModel: { page: 0, pageSize: 10 } },
+                            sorting: {
+                              sortModel: [{ field: 'createdAt', sort: 'desc' }],
+                            },
                           }}
                           pageSizeOptions={[10, 30, 50]}
                           getRowClassName={(params) =>
