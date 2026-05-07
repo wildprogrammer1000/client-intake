@@ -1,7 +1,7 @@
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: client-intake-postgres
+    container_name: inquiry-postgres
     environment:
       POSTGRES_DB: client_intake
       POSTGRES_USER: postgres
@@ -18,7 +18,7 @@ services:
     build:
       context: .
       dockerfile: backend/Dockerfile
-    container_name: client-intake-backend
+    container_name: inquiry-backend
     environment:
       NODE_ENV: production
       PORT: 4000
@@ -34,16 +34,6 @@ services:
         condition: service_healthy
     ports:
       - "4000:4000"
-
-  frontend:
-    build:
-      context: .
-      dockerfile: frontend/Dockerfile
-    container_name: client-intake-frontend
-    depends_on:
-      - backend
-    ports:
-      - "8080:8080"
 
 volumes:
   client_intake_data:

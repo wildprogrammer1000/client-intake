@@ -167,7 +167,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "/Users/seungjuh/Projects/client-intake/backend/src/generated/prisma",
+      "value": "/Users/seungjuh/Projects/inquiry/backend/src/generated/prisma",
       "fromEnvVar": null
     },
     "config": {
@@ -181,7 +181,7 @@ const config = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "/Users/seungjuh/Projects/client-intake/backend/prisma/schema.prisma",
+    "sourceFilePath": "/Users/seungjuh/Projects/inquiry/backend/prisma/schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {

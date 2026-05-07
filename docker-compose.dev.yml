@@ -1,7 +1,7 @@
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: client-intake-postgres-dev
+    container_name: inquiry-postgres-dev
     environment:
       POSTGRES_DB: client_intake
       POSTGRES_USER: postgres

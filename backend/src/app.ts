@@ -21,7 +21,7 @@ app.use(express.json())
 
 app.get('/', (_req, res) => {
   res.json({
-    service: 'client-intake-backend',
+    service: 'inquiry-backend',
     message: 'Backend API is running',
   })
 })
