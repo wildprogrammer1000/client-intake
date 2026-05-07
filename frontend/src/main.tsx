@@ -1,21 +1,25 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { CssBaseline, ThemeProvider, createTheme } from '@mui/material'
+import { koKR as coreKoKR } from '@mui/material/locale'
 import './assets/fonts/fonts.css'
 import './index.css'
 import App from './App.tsx'
 
-const theme = createTheme({
-  palette: {
-    mode: 'light',
-    primary: {
-      main: '#1976d2',
+const theme = createTheme(
+  {
+    palette: {
+      mode: 'light',
+      primary: {
+        main: '#1976d2',
+      },
+    },
+    typography: {
+      fontFamily: 'var(--app-font-family)',
     },
   },
-  typography: {
-    fontFamily: 'var(--app-font-family)',
-  },
-})
+  coreKoKR,
+)
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

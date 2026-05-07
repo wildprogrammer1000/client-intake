@@ -24,6 +24,7 @@ import {
 } from '@mui/material'
 import { DataGrid, GridToolbar } from '@mui/x-data-grid'
 import type { GridColDef, GridRenderCellParams } from '@mui/x-data-grid'
+import { koKR as dataGridKoKR } from '@mui/x-data-grid/locales'
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 
@@ -704,6 +705,7 @@ export default function AdminPage() {
                           columns={inquiryColumns}
                           getRowId={(row) => row.id}
                           disableRowSelectionOnClick
+                          localeText={dataGridKoKR.components.MuiDataGrid.defaultProps.localeText}
                           slots={{ toolbar: GridToolbar }}
                           slotProps={{
                             toolbar: {
