@@ -16,6 +16,7 @@ COPY backend/prisma ./backend/prisma
 WORKDIR /app/backend
 RUN npx prisma generate
 RUN npm run build
+RUN mkdir -p dist/generated && cp -R src/generated/prisma dist/generated/prisma
 
 FROM node:22-alpine AS runner
 
