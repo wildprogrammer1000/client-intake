@@ -4,6 +4,7 @@ import {
   Button,
   Card,
   CardContent,
+  Checkbox,
   Chip,
   CircularProgress,
   Container,
@@ -13,6 +14,7 @@ import {
   DialogContent,
   DialogTitle,
   FormControl,
+  FormControlLabel,
   InputLabel,
   MenuItem,
   Select,
@@ -38,12 +40,25 @@ type InquiryListItem = {
   id: number
   companyName: string | null
   name: string
-  contact: string
+  phone: string
+  email: string
   projectType: string
   status: InquiryStatus
-  adminMemo: string | null
+  memo: string | null
   expectedTimeline: string
   budget: string
+  estimatedPrice: number | null
+  isRead: boolean
+  source: string | null
+  tags: string[]
+  customerIp: string | null
+  createdAt: string
+}
+
+type InquiryAttachment = {
+  id: number
+  url: string
+  fileName: string | null
   createdAt: string
 }
 
@@ -53,7 +68,7 @@ type InquiryDetail = InquiryListItem & {
   keyFeatures: string
   referenceLinks: string | null
   inquiryDetails: string
-  attachmentUrls: string[]
+  attachments: InquiryAttachment[]
 }
 
 type AdminMenuKey = 'inquiries' | 'settings'
@@ -69,6 +84,25 @@ const INQUIRY_STATUS_COLORS: Record<InquiryStatus, 'default' | 'warning' | 'info
   WAITING: 'warning',
   IN_PROGRESS: 'info',
   COMPLETED: 'success',
+}
+
+function parseOptionalPriceInput(raw: string): number | null {
+  const t = raw.trim()
+  if (!t) {
+    return null
+  }
+  const n = Number(t.replaceAll(',', ''))
+  if (!Number.isFinite(n) || n < 0) {
+    throw new Error('견적 금액을 확인해 주세요.')
+  }
+  return n
+}
+
+function parseTagsInput(raw: string): string[] {
+  return raw
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean)
 }
 
 const withAuthHeader = (token: string) => ({
@@ -98,6 +132,9 @@ export default function AdminPage() {
   const [statusSavingIds, setStatusSavingIds] = useState<Record<number, boolean>>({})
   const [managementStatus, setManagementStatus] = useState<InquiryStatus>('WAITING')
   const [managementMemo, setManagementMemo] = useState('')
+  const [managementTags, setManagementTags] = useState('')
+  const [managementEstimated, setManagementEstimated] = useState('')
+  const [managementIsRead, setManagementIsRead] = useState(false)
 
   const logout = () => {
     localStorage.removeItem(ADMIN_TOKEN_KEY)
@@ -159,7 +196,14 @@ export default function AdminPage() {
       const data = (await response.json()) as InquiryDetail
       setSelected(data)
       setManagementStatus(data.status)
-      setManagementMemo(data.adminMemo ?? '')
+      setManagementMemo(data.memo ?? '')
+      setManagementTags(data.tags?.length ? data.tags.join(', ') : '')
+      setManagementEstimated(
+        data.estimatedPrice != null && data.estimatedPrice !== undefined
+          ? String(data.estimatedPrice)
+          : '',
+      )
+      setManagementIsRead(data.isRead)
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : '오류가 발생했습니다.')
     } finally {
@@ -175,6 +219,16 @@ export default function AdminPage() {
     setErrorMessage('')
     setIsManagementSaving(true)
     try {
+      let estimatedPrice: number | null
+      try {
+        estimatedPrice = parseOptionalPriceInput(managementEstimated)
+      } catch {
+        setErrorMessage('견적 금액을 확인해 주세요.')
+        return
+      }
+
+      const tags = parseTagsInput(managementTags)
+
       const response = await fetch(`${API_BASE_URL}/api/admin/inquiries/${selected.id}`, {
         method: 'PATCH',
         headers: {
@@ -183,7 +237,10 @@ export default function AdminPage() {
         },
         body: JSON.stringify({
           status: managementStatus,
-          adminMemo: managementMemo.trim() || null,
+          memo: managementMemo.trim() || null,
+          estimatedPrice,
+          isRead: managementIsRead,
+          tags,
         }),
       })
 
@@ -200,14 +257,24 @@ export default function AdminPage() {
       const updated = (await response.json()) as InquiryDetail
       setSelected(updated)
       setManagementStatus(updated.status)
-      setManagementMemo(updated.adminMemo ?? '')
+      setManagementMemo(updated.memo ?? '')
+      setManagementTags(updated.tags?.length ? updated.tags.join(', ') : '')
+      setManagementEstimated(
+        updated.estimatedPrice != null && updated.estimatedPrice !== undefined
+          ? String(updated.estimatedPrice)
+          : '',
+      )
+      setManagementIsRead(updated.isRead)
       setItems((prev) =>
         prev.map((item) =>
           item.id === updated.id
             ? {
                 ...item,
                 status: updated.status,
-                adminMemo: updated.adminMemo,
+                memo: updated.memo,
+                estimatedPrice: updated.estimatedPrice,
+                isRead: updated.isRead,
+                tags: updated.tags,
               }
             : item,
         ),
@@ -258,7 +325,10 @@ export default function AdminPage() {
             ? {
                 ...item,
                 status: updated.status,
-                adminMemo: updated.adminMemo,
+                memo: updated.memo,
+                estimatedPrice: updated.estimatedPrice,
+                isRead: updated.isRead,
+                tags: updated.tags,
               }
             : item,
         ),
@@ -266,7 +336,14 @@ export default function AdminPage() {
       if (selected?.id === id) {
         setSelected(updated)
         setManagementStatus(updated.status)
-        setManagementMemo(updated.adminMemo ?? '')
+        setManagementMemo(updated.memo ?? '')
+        setManagementTags(updated.tags?.length ? updated.tags.join(', ') : '')
+        setManagementEstimated(
+          updated.estimatedPrice != null && updated.estimatedPrice !== undefined
+            ? String(updated.estimatedPrice)
+            : '',
+        )
+        setManagementIsRead(updated.isRead)
       }
     } catch (error) {
       if (previousItem) {
@@ -382,7 +459,14 @@ export default function AdminPage() {
       flex: 1.1,
       valueGetter: (_value, row) => row.companyName ?? '회사명 미기재',
     },
-    { field: 'contact', headerName: '연락처', minWidth: 170, flex: 1.1 },
+    { field: 'phone', headerName: '전화', minWidth: 130, flex: 0.85 },
+    {
+      field: 'email',
+      headerName: '이메일',
+      minWidth: 140,
+      flex: 1,
+      valueGetter: (value: unknown) => (typeof value === 'string' && value.trim() ? value : '-'),
+    },
     {
       field: 'status',
       headerName: '상태',
@@ -429,6 +513,20 @@ export default function AdminPage() {
       ),
     },
     {
+      field: 'isRead',
+      headerName: '읽음',
+      minWidth: 90,
+      flex: 0.5,
+      renderCell: (params: GridRenderCellParams<InquiryListItem, boolean>) => (
+        <Chip
+          size="small"
+          label={params.value ? '읽음' : '미읽음'}
+          color={params.value ? 'default' : 'warning'}
+          variant={params.value ? 'filled' : 'outlined'}
+        />
+      ),
+    },
+    {
       field: 'projectType',
       headerName: '유형',
       minWidth: 130,
@@ -443,7 +541,7 @@ export default function AdminPage() {
       ),
     },
     {
-      field: 'adminMemo',
+      field: 'memo',
       headerName: '메모',
       minWidth: 180,
       flex: 1.2,
@@ -451,6 +549,22 @@ export default function AdminPage() {
     },
     { field: 'expectedTimeline', headerName: '일정', minWidth: 130, flex: 1 },
     { field: 'budget', headerName: '예산', minWidth: 130, flex: 1 },
+    {
+      field: 'estimatedPrice',
+      headerName: '견적(원)',
+      minWidth: 110,
+      flex: 0.7,
+      valueGetter: (value) =>
+        value != null && value !== '' ? Number(value).toLocaleString('ko-KR') : '-',
+    },
+    {
+      field: 'tags',
+      headerName: '태그',
+      minWidth: 120,
+      flex: 0.8,
+      valueGetter: (value: unknown) =>
+        Array.isArray(value) && value.length > 0 ? (value as string[]).join(', ') : '-',
+    },
     {
       field: 'createdAt',
       headerName: '접수일',
@@ -683,7 +797,16 @@ export default function AdminPage() {
           {selected ? (
             <Stack spacing={1.5}>
               <Typography><strong>이름:</strong> {selected.name}</Typography>
-              <Typography><strong>연락처:</strong> {selected.contact}</Typography>
+              <Typography><strong>전화:</strong> {selected.phone}</Typography>
+              <Typography>
+                <strong>이메일:</strong> {selected.email?.trim() ? selected.email : '-'}
+              </Typography>
+              <Typography>
+                <strong>유입 경로(source):</strong> {selected.source?.trim() ? selected.source : '-'}
+              </Typography>
+              <Typography>
+                <strong>접속 IP:</strong> {selected.customerIp ?? '-'}
+              </Typography>
               <Typography><strong>회사명:</strong> {selected.companyName ?? '-'}</Typography>
               <Stack direction={{ xs: 'column', md: 'row' }} spacing={1.5}>
                 <FormControl fullWidth size="small">
@@ -717,6 +840,29 @@ export default function AdminPage() {
                 onChange={(event) => setManagementMemo(event.target.value)}
                 helperText="내부 관리용 메모입니다."
               />
+              <TextField
+                label="관리 태그"
+                fullWidth
+                value={managementTags}
+                onChange={(event) => setManagementTags(event.target.value)}
+                helperText="쉼표로 구분해 입력합니다."
+              />
+              <TextField
+                label="견적 금액(원)"
+                fullWidth
+                value={managementEstimated}
+                onChange={(event) => setManagementEstimated(event.target.value)}
+                placeholder="비워두면 미등록"
+              />
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={managementIsRead}
+                    onChange={(event) => setManagementIsRead(event.target.checked)}
+                  />
+                }
+                label="읽음 처리"
+              />
               <Typography><strong>유형:</strong> {selected.projectType}</Typography>
               <Typography><strong>유형 상세:</strong> {selected.projectTypeDetail ?? '-'}</Typography>
               <Typography><strong>개발 목적:</strong> {selected.developmentPurpose}</Typography>
@@ -728,11 +874,11 @@ export default function AdminPage() {
               <Divider />
               <Box>
                 <Typography sx={{ mb: 0.5 }}><strong>첨부파일</strong></Typography>
-                {selected.attachmentUrls.length ? (
+                {selected.attachments.length ? (
                   <Stack spacing={0.5}>
-                    {selected.attachmentUrls.map((url) => (
-                      <a key={url} href={url} target="_blank" rel="noreferrer">
-                        {url}
+                    {selected.attachments.map((file) => (
+                      <a key={file.id} href={file.url} target="_blank" rel="noreferrer">
+                        {file.fileName?.trim() ? file.fileName : file.url}
                       </a>
                     ))}
                   </Stack>

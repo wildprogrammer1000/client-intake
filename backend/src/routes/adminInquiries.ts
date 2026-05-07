@@ -1,4 +1,5 @@
 import { Router } from 'express'
+import type { Decimal } from '@prisma/client/runtime/library'
 import { z } from 'zod'
 import { requireAdminAuth } from '../middleware/adminAuth.js'
 import { prisma } from '../lib/prisma.js'
@@ -20,11 +21,31 @@ const idParamSchema = z.object({
 const updateInquirySchema = z
   .object({
     status: z.enum(['WAITING', 'IN_PROGRESS', 'COMPLETED']).optional(),
-    adminMemo: z.string().trim().max(5000).nullable().optional(),
+    memo: z.string().trim().max(5000).nullable().optional(),
+    estimatedPrice: z.union([z.number().nonnegative(), z.null()]).optional(),
+    isRead: z.boolean().optional(),
+    tags: z.array(z.string().trim().min(1).max(50)).max(30).optional(),
+    source: z.string().trim().max(500).nullable().optional(),
   })
-  .refine((value) => value.status !== undefined || value.adminMemo !== undefined, {
-    message: '수정할 항목이 없습니다.',
-  })
+  .refine(
+    (value) =>
+      value.status !== undefined ||
+      value.memo !== undefined ||
+      value.estimatedPrice !== undefined ||
+      value.isRead !== undefined ||
+      value.tags !== undefined ||
+      value.source !== undefined,
+    {
+      message: '수정할 항목이 없습니다.',
+    },
+  )
+
+function serializePrice(value: Decimal | null): number | null {
+  if (value === null) {
+    return null
+  }
+  return Number(value)
+}
 
 export const adminInquiryRouter = Router()
 adminInquiryRouter.use(requireAdminAuth)
@@ -49,7 +70,8 @@ adminInquiryRouter.get('/', async (req, res) => {
         ? {
             OR: [
               { name: { contains: keyword, mode: 'insensitive' as const } },
-              { contact: { contains: keyword, mode: 'insensitive' as const } },
+              { phone: { contains: keyword, mode: 'insensitive' as const } },
+              { email: { contains: keyword, mode: 'insensitive' as const } },
               { companyName: { contains: keyword, mode: 'insensitive' as const } },
               { inquiryDetails: { contains: keyword, mode: 'insensitive' as const } },
             ],
@@ -57,7 +79,7 @@ adminInquiryRouter.get('/', async (req, res) => {
         : {}),
     }
 
-    const [total, items] = await Promise.all([
+    const [total, rows] = await Promise.all([
       prisma.inquiry.count({ where }),
       prisma.inquiry.findMany({
         where,
@@ -68,16 +90,27 @@ adminInquiryRouter.get('/', async (req, res) => {
           id: true,
           companyName: true,
           name: true,
-          contact: true,
+          phone: true,
+          email: true,
           projectType: true,
           status: true,
-          adminMemo: true,
+          memo: true,
           expectedTimeline: true,
           budget: true,
+          estimatedPrice: true,
+          isRead: true,
+          source: true,
+          tags: true,
+          customerIp: true,
           createdAt: true,
         },
       }),
     ])
+
+    const items = rows.map((row) => ({
+      ...row,
+      estimatedPrice: serializePrice(row.estimatedPrice),
+    }))
 
     return res.status(200).json({
       items,
@@ -106,13 +139,17 @@ adminInquiryRouter.get('/:id', async (req, res) => {
 
     const inquiry = await prisma.inquiry.findUnique({
       where: { id: parsed.data.id },
+      include: { attachments: true },
     })
 
     if (!inquiry) {
       return res.status(404).json({ message: '문의를 찾을 수 없습니다.' })
     }
 
-    return res.status(200).json(inquiry)
+    return res.status(200).json({
+      ...inquiry,
+      estimatedPrice: serializePrice(inquiry.estimatedPrice),
+    })
   } catch (error) {
     console.error(error)
     return res.status(500).json({ message: '문의 상세 조회 중 오류가 발생했습니다.' })
@@ -137,18 +174,27 @@ adminInquiryRouter.patch('/:id', async (req, res) => {
       })
     }
 
-    const { status, adminMemo } = parsedBody.data
-    const memoValue = adminMemo === undefined ? undefined : adminMemo || null
+    const { status, memo, estimatedPrice, isRead, tags, source } = parsedBody.data
+    const memoValue = memo === undefined ? undefined : memo || null
+    const sourceValue = source === undefined ? undefined : source || null
 
     const inquiry = await prisma.inquiry.update({
       where: { id: parsedParams.data.id },
       data: {
         ...(status !== undefined ? { status } : {}),
-        ...(memoValue !== undefined ? { adminMemo: memoValue } : {}),
+        ...(memoValue !== undefined ? { memo: memoValue } : {}),
+        ...(estimatedPrice !== undefined ? { estimatedPrice } : {}),
+        ...(isRead !== undefined ? { isRead } : {}),
+        ...(tags !== undefined ? { tags } : {}),
+        ...(sourceValue !== undefined ? { source: sourceValue } : {}),
       },
+      include: { attachments: true },
     })
 
-    return res.status(200).json(inquiry)
+    return res.status(200).json({
+      ...inquiry,
+      estimatedPrice: serializePrice(inquiry.estimatedPrice),
+    })
   } catch (error) {
     if (error instanceof Error && 'code' in error && error.code === 'P2025') {
       return res.status(404).json({ message: '문의를 찾을 수 없습니다.' })

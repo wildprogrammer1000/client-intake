@@ -2,10 +2,19 @@ import { Router } from 'express'
 import { z } from 'zod'
 import { sendInquiryNotificationEmail } from '../lib/inquiryNotification.js'
 import { prisma } from '../lib/prisma.js'
+import { getRequestClientIp } from '../lib/requestIp.js'
+
+const emptyOrEmail = z.union([z.literal(''), z.string().email()])
+
+const attachmentInputSchema = z.object({
+  url: z.string().url(),
+  fileName: z.string().trim().max(500).optional(),
+})
 
 const createInquirySchema = z.object({
   name: z.string().trim().min(1).max(100),
-  contact: z.string().trim().min(1).max(200),
+  phone: z.string().trim().min(1).max(40),
+  email: emptyOrEmail.optional().default(''),
   projectType: z.enum(['WEBSITE', 'MOBILE_APP', 'GAME', 'SERVICE_PROGRAM', 'OTHER']),
   projectTypeDetail: z.string().trim().max(200).optional(),
   developmentPurpose: z.string().trim().min(1).max(2000),
@@ -14,7 +23,8 @@ const createInquirySchema = z.object({
   expectedTimeline: z.string().trim().min(1).max(1000),
   budget: z.string().trim().min(1).max(500),
   inquiryDetails: z.string().trim().min(1).max(8000),
-  attachmentUrls: z.array(z.string().url()).max(10).optional().default([]),
+  attachments: z.array(attachmentInputSchema).max(10).optional().default([]),
+  source: z.string().trim().max(500).optional(),
 })
 
 export const inquiryRouter = Router()
@@ -34,7 +44,8 @@ inquiryRouter.post('/', async (req, res) => {
     const inquiry = await prisma.inquiry.create({
       data: {
         name: payload.name,
-        contact: payload.contact,
+        phone: payload.phone,
+        email: payload.email ?? '',
         projectType: payload.projectType,
         projectTypeDetail: payload.projectTypeDetail,
         developmentPurpose: payload.developmentPurpose,
@@ -43,8 +54,16 @@ inquiryRouter.post('/', async (req, res) => {
         expectedTimeline: payload.expectedTimeline,
         budget: payload.budget,
         inquiryDetails: payload.inquiryDetails,
-        attachmentUrls: payload.attachmentUrls,
+        customerIp: getRequestClientIp(req),
+        source: payload.source?.length ? payload.source : null,
+        attachments: {
+          create: payload.attachments.map((a) => ({
+            url: a.url,
+            fileName: a.fileName ?? null,
+          })),
+        },
       },
+      include: { attachments: true },
     })
 
     try {
