@@ -3,6 +3,7 @@ import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import { randomUUID } from 'node:crypto'
 import { Router } from 'express'
 import { z } from 'zod'
+import { buildAwsClientConfig } from '../lib/awsClientConfig.js'
 
 const createPresignedUrlSchema = z.object({
   fileName: z.string().trim().min(1).max(255),
@@ -55,7 +56,7 @@ uploadRouter.post('/presigned-url', async (req, res) => {
     const safeFileName = buildSafeFileName(fileName)
     const key = `${prefix}/${year}/${month}/${randomUUID()}-${safeFileName}`
 
-    const s3Client = new S3Client({ region })
+    const s3Client = new S3Client(buildAwsClientConfig(region))
     const putCommand = new PutObjectCommand({
       Bucket: bucket,
       Key: key,

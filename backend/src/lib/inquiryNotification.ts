@@ -1,5 +1,6 @@
 import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses'
 import type { Inquiry, InquiryAttachment, ProjectType } from '../generated/prisma/index.js'
+import { buildAwsClientConfig } from './awsClientConfig.js'
 
 export type InquiryWithAttachments = Inquiry & { attachments: InquiryAttachment[] }
 
@@ -18,9 +19,12 @@ const getSesClient = () => {
     return sesClient
   }
 
-  sesClient = new SESClient({
-    region: process.env.AWS_REGION,
-  })
+  const region = process.env.AWS_REGION?.trim()
+  if (!region) {
+    throw new Error('AWS_REGION 환경변수가 설정되지 않았습니다.')
+  }
+
+  sesClient = new SESClient(buildAwsClientConfig(region))
 
   return sesClient
 }
