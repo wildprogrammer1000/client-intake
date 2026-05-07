@@ -3,7 +3,7 @@ services:
     image: postgres:16-alpine
     container_name: inquiry-postgres-dev
     environment:
-      POSTGRES_DB: client_intake
+      POSTGRES_DB: inquiry
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
@@ -11,10 +11,11 @@ services:
     volumes:
       - postgres_dev_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d client_intake"]
-      interval: 10s
+      test: ["CMD-SHELL", "pg_isready -U postgres -d inquiry"]
+      interval: 5s
+      start_period: 10s
       timeout: 5s
-      retries: 5
+      retries: 3
 
 volumes:
   postgres_dev_data:
