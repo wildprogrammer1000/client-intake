@@ -13,15 +13,21 @@ import {
 } from '@mui/material'
 import { useMemo, useState } from 'react'
 import type { ChangeEvent, FormEvent } from 'react'
+import PhoneNumberFields from '../../inquiry/PhoneNumberFields'
 import { INQUIRY_KIND_LABEL, type InquiryServiceKind } from '../../inquiry/inquiryPaths'
+import {
+  emptyPhoneParts,
+  isPhonePartsComplete,
+  joinPhoneParts,
+  type PhoneParts,
+} from '../../inquiry/phoneParts'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:4000'
 
 type ProjectType = 'WEBSITE' | 'MOBILE_APP' | 'GAME' | 'SERVICE_PROGRAM' | 'OTHER'
 
-export type ServiceInquiryFormState = {
+export type ServiceInquiryFormState = PhoneParts & {
   name: string
-  phone: string
   email: string
   projectType: ProjectType
   projectTypeDetail: string
@@ -34,8 +40,8 @@ export type ServiceInquiryFormState = {
 }
 
 const initialFormValue: ServiceInquiryFormState = {
+  ...emptyPhoneParts(),
   name: '',
-  phone: '',
   email: '',
   projectType: 'WEBSITE',
   projectTypeDetail: '',
@@ -77,7 +83,7 @@ export default function ServiceInquiryForm({ kind }: ServiceInquiryFormProps) {
   })
 
   const canSubmit = useMemo(() => {
-    const hasBasicFields = Boolean(form.name.trim() && form.phone.trim())
+    const hasBasicFields = Boolean(form.name.trim() && isPhonePartsComplete(form))
 
     if (!hasBasicFields) {
       return false
@@ -193,7 +199,7 @@ export default function ServiceInquiryForm({ kind }: ServiceInquiryFormProps) {
         body: JSON.stringify({
           inquiryKind: inquiryKindForApi,
           name: form.name.trim(),
-          phone: form.phone.trim(),
+          phone: joinPhoneParts(form),
           email: form.email.trim(),
           projectType: form.projectType,
           projectTypeDetail: form.projectTypeDetail.trim() || undefined,
@@ -266,13 +272,15 @@ export default function ServiceInquiryForm({ kind }: ServiceInquiryFormProps) {
               value={form.name}
               onChange={handleTextChange('name')}
             />
-            <TextField
-              fullWidth
+            <PhoneNumberFields
+              value={{
+                phone1: form.phone1,
+                phone2: form.phone2,
+                phone3: form.phone3,
+              }}
+              onChange={(next) => setForm((prev) => ({ ...prev, ...next }))}
               required
-              label="전화번호"
-              placeholder="010-1234-5678"
-              value={form.phone}
-              onChange={handleTextChange('phone')}
+              disabled={isSubmitting}
             />
             <TextField
               fullWidth

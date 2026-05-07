@@ -15,12 +15,18 @@ import {
 import { useMemo, useState } from 'react'
 import type { ChangeEvent, FormEvent } from 'react'
 import { Link as RouterLink } from 'react-router-dom'
+import PhoneNumberFields from '../inquiry/PhoneNumberFields'
+import {
+  emptyPhoneParts,
+  isPhonePartsComplete,
+  joinPhoneParts,
+  type PhoneParts,
+} from '../inquiry/phoneParts'
 
 type ProjectType = 'WEBSITE' | 'MOBILE_APP' | 'GAME' | 'SERVICE_PROGRAM' | 'OTHER'
 
-type InquiryForm = {
+type InquiryForm = PhoneParts & {
   name: string
-  phone: string
   email: string
   projectType: ProjectType
   projectTypeDetail: string
@@ -35,8 +41,8 @@ type InquiryForm = {
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:4000'
 
 const initialFormValue: InquiryForm = {
+  ...emptyPhoneParts(),
   name: '',
-  phone: '',
   email: '',
   projectType: 'WEBSITE',
   projectTypeDetail: '',
@@ -65,7 +71,7 @@ export default function InquiryFormPage() {
   const canSubmit = useMemo(() => {
     return Boolean(
       form.name.trim() &&
-      form.phone.trim() &&
+      isPhonePartsComplete(form) &&
       form.developmentPurpose.trim() &&
       form.keyFeatures.trim() &&
       form.expectedTimeline.trim() &&
@@ -147,7 +153,7 @@ export default function InquiryFormPage() {
         },
         body: JSON.stringify({
           name: form.name.trim(),
-          phone: form.phone.trim(),
+          phone: joinPhoneParts(form),
           email: form.email.trim(),
           projectType: form.projectType,
           projectTypeDetail: form.projectTypeDetail.trim() || undefined,
@@ -224,13 +230,15 @@ export default function InquiryFormPage() {
               value={form.name}
               onChange={handleTextChange('name')}
             />
-            <TextField
-              fullWidth
+            <PhoneNumberFields
+              value={{
+                phone1: form.phone1,
+                phone2: form.phone2,
+                phone3: form.phone3,
+              }}
+              onChange={(next) => setForm((prev) => ({ ...prev, ...next }))}
               required
-              label="전화번호"
-              placeholder="010-1234-5678"
-              value={form.phone}
-              onChange={handleTextChange('phone')}
+              disabled={isSubmitting}
             />
             <TextField
               fullWidth
