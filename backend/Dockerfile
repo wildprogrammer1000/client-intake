@@ -2,13 +2,17 @@ FROM node:22-alpine AS builder
 
 WORKDIR /app
 
-COPY backend/package*.json ./
+COPY package.json package-lock.json ./
+COPY backend/package.json ./backend/
+COPY frontend/package.json ./frontend/
+
 RUN npm ci
 
-COPY backend/tsconfig.json ./tsconfig.json
-COPY backend/src ./src
-COPY backend/prisma ./prisma
+COPY backend/tsconfig.json ./backend/tsconfig.json
+COPY backend/src ./backend/src
+COPY backend/prisma ./backend/prisma
 
+WORKDIR /app/backend
 RUN npx prisma generate
 RUN npm run build
 
@@ -18,13 +22,18 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
-COPY backend/package*.json ./
-RUN npm ci --omit=dev
+COPY package.json package-lock.json ./
+COPY backend/package.json ./backend/
+COPY frontend/package.json ./frontend/
+
+RUN npm ci --omit=dev --workspace=backend
 
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
-COPY --from=builder /app/dist ./dist
-COPY backend/prisma ./prisma
+COPY --from=builder /app/backend/dist ./backend/dist
+COPY backend/prisma ./backend/prisma
+
+WORKDIR /app/backend
 
 EXPOSE 4000
 
