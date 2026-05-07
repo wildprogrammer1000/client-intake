@@ -1,0 +1,23 @@
+{
+  "name": "Wildsoft 개발 견적 문의",
+  "short_name": "Wildsoft 문의",
+  "description": "개발 외주 및 유지보수 문의를 빠르게 접수합니다.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1976d2",
+  "lang": "ko-KR",
+  "icons": [
+    {
+      "src": "/logo-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/logo-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
