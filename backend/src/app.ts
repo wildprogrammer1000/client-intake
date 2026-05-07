@@ -1,3 +1,4 @@
+import cors from 'cors'
 import express from 'express'
 import helmet from 'helmet'
 import { adminAuthRouter } from './routes/adminAuth.js'
@@ -7,6 +8,22 @@ import { inquiryRouter } from './routes/inquiries.js'
 import { uploadRouter } from './routes/uploads.js'
 
 export const app = express()
+
+const localBrowserOrigin = /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/i
+
+if (process.env.NODE_ENV !== 'production') {
+  app.use(
+    cors({
+      origin(origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) {
+        if (!origin || localBrowserOrigin.test(origin)) {
+          return callback(null, true)
+        }
+        callback(null, false)
+      },
+      credentials: true,
+    }),
+  )
+}
 
 app.use(helmet())
 app.use(express.json())
