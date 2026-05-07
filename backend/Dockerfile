@@ -33,6 +33,8 @@ RUN --mount=type=cache,target=/root/.npm npm ci --omit=dev --workspace=backend
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 COPY --from=builder /app/backend/dist ./backend/dist
+# Custom Prisma client output (`schema.prisma`): keep path used by prisma/seed.ts
+COPY --from=builder /app/backend/src/generated/prisma ./backend/src/generated/prisma
 COPY backend/prisma ./backend/prisma
 
 WORKDIR /app/backend
