@@ -125,10 +125,11 @@ exports.Prisma.InquiryScalarFieldEnum = {
   id: 'id',
   companyName: 'companyName',
   name: 'name',
-  contact: 'contact',
+  phone: 'phone',
+  email: 'email',
   projectType: 'projectType',
   status: 'status',
-  adminMemo: 'adminMemo',
+  memo: 'memo',
   projectTypeDetail: 'projectTypeDetail',
   developmentPurpose: 'developmentPurpose',
   keyFeatures: 'keyFeatures',
@@ -136,9 +137,21 @@ exports.Prisma.InquiryScalarFieldEnum = {
   expectedTimeline: 'expectedTimeline',
   budget: 'budget',
   inquiryDetails: 'inquiryDetails',
-  attachmentUrls: 'attachmentUrls',
+  estimatedPrice: 'estimatedPrice',
+  customerIp: 'customerIp',
+  isRead: 'isRead',
+  source: 'source',
+  tags: 'tags',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
+};
+
+exports.Prisma.InquiryAttachmentScalarFieldEnum = {
+  id: 'id',
+  inquiryId: 'inquiryId',
+  url: 'url',
+  fileName: 'fileName',
+  createdAt: 'createdAt'
 };
 
 exports.Prisma.AdminUserScalarFieldEnum = {
@@ -181,6 +194,7 @@ exports.InquiryStatus = exports.$Enums.InquiryStatus = {
 
 exports.Prisma.ModelName = {
   Inquiry: 'Inquiry',
+  InquiryAttachment: 'InquiryAttachment',
   AdminUser: 'AdminUser'
 };
 

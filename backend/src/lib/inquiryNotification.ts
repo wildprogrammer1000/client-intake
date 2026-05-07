@@ -1,5 +1,7 @@
 import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses'
-import type { Inquiry, ProjectType } from '../generated/prisma/index.js'
+import type { Inquiry, InquiryAttachment, ProjectType } from '../generated/prisma/index.js'
+
+export type InquiryWithAttachments = Inquiry & { attachments: InquiryAttachment[] }
 
 const projectTypeLabelMap: Record<ProjectType, string> = {
   WEBSITE: '웹사이트',
@@ -39,7 +41,7 @@ const formatDateTime = (date: Date) => {
   }).format(date)
 }
 
-export const sendInquiryNotificationEmail = async (payload: Inquiry) => {
+export const sendInquiryNotificationEmail = async (payload: InquiryWithAttachments) => {
   const fromAddress = process.env.AWS_SES_FROM_EMAIL
   const toAddress = process.env.ADMIN_NOTIFICATION_EMAIL
 
@@ -52,11 +54,14 @@ export const sendInquiryNotificationEmail = async (payload: Inquiry) => {
 
   const projectTypeLabel = projectTypeLabelMap[payload.projectType]
   const attachmentText =
-    payload.attachmentUrls.length > 0 ? payload.attachmentUrls.join('\n') : '첨부 파일 없음'
+    payload.attachments.length > 0
+      ? payload.attachments.map((a) => a.url).join('\n')
+      : '첨부 파일 없음'
   const referenceLinks = payload.referenceLinks ?? '-'
   const projectTypeDetail = payload.projectTypeDetail ?? '-'
   const createdAt = formatDateTime(payload.createdAt)
   const subject = `[문의 접수] ${payload.name} (${projectTypeLabel})`
+  const emailLine = payload.email?.trim() ? payload.email.trim() : '(미입력)'
 
   const textBody = [
     '새 문의가 접수되었습니다.',
@@ -64,7 +69,8 @@ export const sendInquiryNotificationEmail = async (payload: Inquiry) => {
     `문의 ID: ${payload.id}`,
     `접수 시각: ${createdAt}`,
     `이름: ${payload.name}`,
-    `연락처: ${payload.contact}`,
+    `전화: ${payload.phone}`,
+    `이메일: ${emailLine}`,
     `프로젝트 유형: ${projectTypeLabel}`,
     `프로젝트 유형 상세: ${projectTypeDetail}`,
     `개발 목적: ${payload.developmentPurpose}`,
@@ -82,7 +88,8 @@ export const sendInquiryNotificationEmail = async (payload: Inquiry) => {
       <li><strong>문의 ID:</strong> ${payload.id}</li>
       <li><strong>접수 시각:</strong> ${escapeHtml(createdAt)}</li>
       <li><strong>이름:</strong> ${escapeHtml(payload.name)}</li>
-      <li><strong>연락처:</strong> ${escapeHtml(payload.contact)}</li>
+      <li><strong>전화:</strong> ${escapeHtml(payload.phone)}</li>
+      <li><strong>이메일:</strong> ${escapeHtml(emailLine)}</li>
       <li><strong>프로젝트 유형:</strong> ${escapeHtml(projectTypeLabel)}</li>
       <li><strong>프로젝트 유형 상세:</strong> ${escapeHtml(projectTypeDetail)}</li>
       <li><strong>개발 목적:</strong> ${escapeHtml(payload.developmentPurpose)}</li>

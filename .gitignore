@@ -6,3 +6,6 @@ dist/
 *.log
 coverage/
 .DS_Store
+
+# Prisma CLI emits platform-specific query engines next to the generated client.
+backend/src/generated/prisma/*.node

@@ -22,7 +22,8 @@ type ProjectType = 'WEBSITE' | 'MOBILE_APP' | 'GAME' | 'SERVICE_PROGRAM' | 'OTHE
 
 export type ServiceInquiryFormState = {
   name: string
-  contact: string
+  phone: string
+  email: string
   projectType: ProjectType
   projectTypeDetail: string
   developmentPurpose: string
@@ -35,7 +36,8 @@ export type ServiceInquiryFormState = {
 
 const initialFormValue: ServiceInquiryFormState = {
   name: '',
-  contact: '',
+  phone: '',
+  email: '',
   projectType: 'WEBSITE',
   projectTypeDetail: '',
   developmentPurpose: '',
@@ -68,7 +70,7 @@ export default function ServiceInquiryForm({ kind }: ServiceInquiryFormProps) {
   const canSubmit = useMemo(() => {
     return Boolean(
       form.name.trim() &&
-        form.contact.trim() &&
+        form.phone.trim() &&
         form.developmentPurpose.trim() &&
         form.keyFeatures.trim() &&
         form.expectedTimeline.trim() &&
@@ -87,12 +89,12 @@ export default function ServiceInquiryForm({ kind }: ServiceInquiryFormProps) {
     setFiles(Array.from(event.target.files ?? []))
   }
 
-  const uploadFiles = async (): Promise<string[]> => {
+  const uploadFiles = async (): Promise<{ url: string; fileName: string }[]> => {
     if (!files.length) {
       return []
     }
 
-    const uploadedUrls: string[] = []
+    const uploaded: { url: string; fileName: string }[] = []
 
     for (const file of files) {
       const presignedResponse = await fetch(`${API_BASE_URL}/api/uploads/presigned-url`, {
@@ -127,10 +129,10 @@ export default function ServiceInquiryForm({ kind }: ServiceInquiryFormProps) {
         throw new Error('첨부파일 업로드에 실패했습니다.')
       }
 
-      uploadedUrls.push(presignedData.fileUrl)
+      uploaded.push({ url: presignedData.fileUrl, fileName: file.name })
     }
 
-    return uploadedUrls
+    return uploaded
   }
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -138,9 +140,13 @@ export default function ServiceInquiryForm({ kind }: ServiceInquiryFormProps) {
     setIsSubmitting(true)
 
     try {
-      const attachmentUrls = await uploadFiles()
+      const attachments = await uploadFiles()
       const kindLabel = INQUIRY_KIND_LABEL[kind]
       const inquiryDetailsForApi = `〔문의 유형: ${kindLabel}〕\n\n${form.inquiryDetails.trim()}`
+      const source =
+        typeof document !== 'undefined' && document.referrer
+          ? document.referrer.slice(0, 500)
+          : undefined
 
       const response = await fetch(`${API_BASE_URL}/api/inquiries`, {
         method: 'POST',
@@ -149,7 +155,8 @@ export default function ServiceInquiryForm({ kind }: ServiceInquiryFormProps) {
         },
         body: JSON.stringify({
           name: form.name.trim(),
-          contact: form.contact.trim(),
+          phone: form.phone.trim(),
+          email: form.email.trim(),
           projectType: form.projectType,
           projectTypeDetail: form.projectTypeDetail.trim() || undefined,
           developmentPurpose: form.developmentPurpose.trim(),
@@ -158,7 +165,8 @@ export default function ServiceInquiryForm({ kind }: ServiceInquiryFormProps) {
           expectedTimeline: form.expectedTimeline.trim(),
           budget: form.budget.trim(),
           inquiryDetails: inquiryDetailsForApi,
-          attachmentUrls,
+          attachments,
+          ...(source ? { source } : {}),
         }),
       })
 
@@ -206,10 +214,18 @@ export default function ServiceInquiryForm({ kind }: ServiceInquiryFormProps) {
             <TextField
               fullWidth
               required
-              label={copy.labels.contact}
-              placeholder={ph.contact}
-              value={form.contact}
-              onChange={handleTextChange('contact')}
+              label={copy.labels.phone}
+              placeholder={ph.phone}
+              value={form.phone}
+              onChange={handleTextChange('phone')}
+            />
+            <TextField
+              fullWidth
+              type="email"
+              label={copy.labels.email}
+              placeholder={ph.email}
+              value={form.email}
+              onChange={handleTextChange('email')}
             />
           </Stack>
 

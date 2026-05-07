@@ -20,7 +20,8 @@ type ProjectType = 'WEBSITE' | 'MOBILE_APP' | 'GAME' | 'SERVICE_PROGRAM' | 'OTHE
 
 type InquiryForm = {
   name: string
-  contact: string
+  phone: string
+  email: string
   projectType: ProjectType
   projectTypeDetail: string
   developmentPurpose: string
@@ -35,7 +36,8 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:4000
 
 const initialFormValue: InquiryForm = {
   name: '',
-  contact: '',
+  phone: '',
+  email: '',
   projectType: 'WEBSITE',
   projectTypeDetail: '',
   developmentPurpose: '',
@@ -63,7 +65,7 @@ export default function InquiryFormPage() {
   const canSubmit = useMemo(() => {
     return Boolean(
       form.name.trim() &&
-      form.contact.trim() &&
+      form.phone.trim() &&
       form.developmentPurpose.trim() &&
       form.keyFeatures.trim() &&
       form.expectedTimeline.trim() &&
@@ -82,12 +84,12 @@ export default function InquiryFormPage() {
     setFiles(Array.from(event.target.files ?? []))
   }
 
-  const uploadFiles = async (): Promise<string[]> => {
+  const uploadFiles = async (): Promise<{ url: string; fileName: string }[]> => {
     if (!files.length) {
       return []
     }
 
-    const uploadedUrls: string[] = []
+    const uploaded: { url: string; fileName: string }[] = []
 
     for (const file of files) {
       const presignedResponse = await fetch(`${API_BASE_URL}/api/uploads/presigned-url`, {
@@ -122,10 +124,10 @@ export default function InquiryFormPage() {
         throw new Error('첨부파일 업로드에 실패했습니다.')
       }
 
-      uploadedUrls.push(presignedData.fileUrl)
+      uploaded.push({ url: presignedData.fileUrl, fileName: file.name })
     }
 
-    return uploadedUrls
+    return uploaded
   }
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -133,7 +135,11 @@ export default function InquiryFormPage() {
     setIsSubmitting(true)
 
     try {
-      const attachmentUrls = await uploadFiles()
+      const attachments = await uploadFiles()
+      const source =
+        typeof document !== 'undefined' && document.referrer
+          ? document.referrer.slice(0, 500)
+          : undefined
       const response = await fetch(`${API_BASE_URL}/api/inquiries`, {
         method: 'POST',
         headers: {
@@ -141,7 +147,8 @@ export default function InquiryFormPage() {
         },
         body: JSON.stringify({
           name: form.name.trim(),
-          contact: form.contact.trim(),
+          phone: form.phone.trim(),
+          email: form.email.trim(),
           projectType: form.projectType,
           projectTypeDetail: form.projectTypeDetail.trim() || undefined,
           developmentPurpose: form.developmentPurpose.trim(),
@@ -150,7 +157,8 @@ export default function InquiryFormPage() {
           expectedTimeline: form.expectedTimeline.trim(),
           budget: form.budget.trim(),
           inquiryDetails: form.inquiryDetails.trim(),
-          attachmentUrls,
+          attachments,
+          ...(source ? { source } : {}),
         }),
       })
 
@@ -219,10 +227,18 @@ export default function InquiryFormPage() {
             <TextField
               fullWidth
               required
-              label="연락처"
-              placeholder="010-1234-5678 / email@example.com"
-              value={form.contact}
-              onChange={handleTextChange('contact')}
+              label="전화번호"
+              placeholder="010-1234-5678"
+              value={form.phone}
+              onChange={handleTextChange('phone')}
+            />
+            <TextField
+              fullWidth
+              type="email"
+              label="이메일"
+              placeholder="name@example.com (선택)"
+              value={form.email}
+              onChange={handleTextChange('email')}
             />
           </Stack>
 

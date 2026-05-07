@@ -2,7 +2,8 @@ import type { InquiryServiceKind } from './inquiryPaths'
 
 export type ServiceInquiryFormLabels = {
   name: string
-  contact: string
+  phone: string
+  email: string
   projectType: string
   projectTypeDetail: string
   developmentPurpose: string
@@ -35,7 +36,8 @@ export const SERVICE_INQUIRY_FORM_COPY: Record<InquiryServiceKind, ServiceInquir
     sectionFiles: '첨부 자료 (선택)',
     labels: {
       name: '이름',
-      contact: '연락처',
+      phone: '전화번호',
+      email: '이메일',
       projectType: '유형',
       projectTypeDetail: '형태를 조금 더 구체적으로',
       developmentPurpose: '개발 목적',
@@ -47,7 +49,8 @@ export const SERVICE_INQUIRY_FORM_COPY: Record<InquiryServiceKind, ServiceInquir
     },
     placeholders: {
       name: '홍길동',
-      contact: '010-1234-5678 또는 email@example.com',
+      phone: '010-1234-5678',
+      email: 'name@example.com (선택)',
       projectTypeDetail: '예: B2B 예약·정산 웹 서비스',
       developmentPurpose:
         '예: 창업 아이디어 MVP를 빠르게 출시하고 싶습니다.\n오프라인 예약을 온라인으로 옮기고 싶습니다.',
@@ -68,7 +71,8 @@ export const SERVICE_INQUIRY_FORM_COPY: Record<InquiryServiceKind, ServiceInquir
     sectionFiles: '첨부 자료 (선택)',
     labels: {
       name: '이름',
-      contact: '연락처',
+      phone: '전화번호',
+      email: '이메일',
       projectType: '기존 서비스 유형',
       projectTypeDetail: '형태를 조금 더 구체적으로',
       developmentPurpose: '수정 내용',
@@ -80,7 +84,8 @@ export const SERVICE_INQUIRY_FORM_COPY: Record<InquiryServiceKind, ServiceInquir
     },
     placeholders: {
       name: '홍길동',
-      contact: '010-1234-5678 또는 email@example.com',
+      phone: '010-1234-5678',
+      email: 'name@example.com (선택)',
       projectTypeDetail: '예: 병원 예약 웹 + 간호사용 태블릿 앱',
       developmentPurpose:
         '예: 결제 수단을 추가하고 싶습니다.\n관리자 통계 화면을 새로 만들고 싶습니다.',
@@ -102,7 +107,8 @@ export const SERVICE_INQUIRY_FORM_COPY: Record<InquiryServiceKind, ServiceInquir
     sectionFiles: '첨부 자료 (선택)',
     labels: {
       name: '이름',
-      contact: '연락처',
+      phone: '전화번호',
+      email: '이메일',
       projectType: '서비스 유형',
       projectTypeDetail: '서비스 형태를 조금 더 구체적으로',
       developmentPurpose: '문제상황',
@@ -114,7 +120,8 @@ export const SERVICE_INQUIRY_FORM_COPY: Record<InquiryServiceKind, ServiceInquir
     },
     placeholders: {
       name: '홍길동',
-      contact: '010-1234-5678 또는 email@example.com',
+      phone: '010-1234-5678',
+      email: 'name@example.com (선택)',
       projectTypeDetail: '예: iOS 앱 2.3.1, 특정 기업용 웹',
       developmentPurpose: '예: 문제 증상 상세, 기대 동작 등',
       keyFeatures:
