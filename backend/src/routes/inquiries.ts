@@ -11,21 +11,69 @@ const attachmentInputSchema = z.object({
   fileName: z.string().trim().max(500).optional(),
 })
 
-const createInquirySchema = z.object({
+const inquiryKindSchema = z.enum(['NEW_DEVELOPMENT', 'FEATURE_MODIFICATION', 'ISSUE_RESOLUTION'])
+type InquiryKind = z.infer<typeof inquiryKindSchema>
+
+const createInquiryBaseSchema = z.object({
+  inquiryKind: inquiryKindSchema,
   name: z.string().trim().min(1).max(100),
   phone: z.string().trim().min(1).max(40),
   email: emptyOrEmail.optional().default(''),
   projectType: z.enum(['WEBSITE', 'MOBILE_APP', 'GAME', 'SERVICE_PROGRAM', 'OTHER']),
   projectTypeDetail: z.string().trim().max(200).optional(),
+  inquiryDetails: z.string().trim().min(1).max(8000),
+  source: z.string().trim().max(500).optional(),
+})
+
+const newDevelopmentInquirySchema = createInquiryBaseSchema.extend({
+  inquiryKind: z.literal('NEW_DEVELOPMENT'),
   developmentPurpose: z.string().trim().min(1).max(2000),
   keyFeatures: z.string().trim().min(1).max(4000),
   referenceLinks: z.string().trim().max(2000).optional(),
   expectedTimeline: z.string().trim().min(1).max(1000),
   budget: z.string().trim().min(1).max(500),
-  inquiryDetails: z.string().trim().min(1).max(8000),
-  attachments: z.array(attachmentInputSchema).max(10).optional().default([]),
-  source: z.string().trim().max(500).optional(),
+  attachments: z.array(attachmentInputSchema).max(5).optional().default([]),
 })
+
+const featureModificationInquirySchema = createInquiryBaseSchema.extend({
+  inquiryKind: z.literal('FEATURE_MODIFICATION'),
+  developmentPurpose: z.string().trim().min(1).max(2000),
+  keyFeatures: z.string().trim().min(1).max(4000),
+  referenceLinks: z.string().trim().max(2000).optional(),
+  expectedTimeline: z.string().trim().min(1).max(1000),
+  budget: z.string().trim().min(1).max(500),
+  attachments: z.array(attachmentInputSchema).max(8).optional().default([]),
+})
+
+const issueResolutionInquirySchema = createInquiryBaseSchema.extend({
+  inquiryKind: z.literal('ISSUE_RESOLUTION'),
+  developmentPurpose: z.string().trim().min(1).max(2000),
+  keyFeatures: z.string().trim().min(1).max(4000),
+  referenceLinks: z.string().trim().max(2000).optional(),
+  expectedTimeline: z.string().trim().min(1).max(1000),
+  budget: z.string().trim().min(1).max(500),
+  attachments: z.array(attachmentInputSchema).max(3).optional().default([]),
+})
+
+const createInquirySchema = z.discriminatedUnion('inquiryKind', [
+  newDevelopmentInquirySchema,
+  featureModificationInquirySchema,
+  issueResolutionInquirySchema,
+])
+
+const allowedAttachmentExtensionsByKind: Record<InquiryKind, string[]> = {
+  NEW_DEVELOPMENT: ['pdf', 'doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx', 'png', 'jpg', 'jpeg', 'webp', 'zip'],
+  FEATURE_MODIFICATION: ['pdf', 'doc', 'docx', 'png', 'jpg', 'jpeg', 'webp', 'mp4', 'mov', 'zip'],
+  ISSUE_RESOLUTION: ['txt', 'log', 'json', 'png', 'jpg', 'jpeg', 'webp'],
+}
+
+function getFileExtension(fileName: string): string {
+  const idx = fileName.lastIndexOf('.')
+  if (idx < 0 || idx === fileName.length - 1) {
+    return ''
+  }
+  return fileName.slice(idx + 1).toLowerCase()
+}
 
 export const inquiryRouter = Router()
 
@@ -41,8 +89,23 @@ inquiryRouter.post('/', async (req, res) => {
     }
 
     const payload = result.data
+    const allowedExtensions = allowedAttachmentExtensionsByKind[payload.inquiryKind]
+    const invalidFile = payload.attachments.find((attachment) => {
+      if (!attachment.fileName) {
+        return false
+      }
+      const ext = getFileExtension(attachment.fileName)
+      return !ext || !allowedExtensions.includes(ext)
+    })
+    if (invalidFile) {
+      return res.status(400).json({
+        message: '첨부파일 형식이 문의 유형 제한과 맞지 않습니다.',
+      })
+    }
+
     const inquiry = await prisma.inquiry.create({
       data: {
+        inquiryKind: payload.inquiryKind,
         name: payload.name,
         phone: payload.phone,
         email: payload.email ?? '',

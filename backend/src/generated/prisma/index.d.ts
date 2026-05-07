@@ -52,6 +52,15 @@ export const ProjectType: {
 
 export type ProjectType = (typeof ProjectType)[keyof typeof ProjectType]
 
+
+export const InquiryKind: {
+  NEW_DEVELOPMENT: 'NEW_DEVELOPMENT',
+  FEATURE_MODIFICATION: 'FEATURE_MODIFICATION',
+  ISSUE_RESOLUTION: 'ISSUE_RESOLUTION'
+};
+
+export type InquiryKind = (typeof InquiryKind)[keyof typeof InquiryKind]
+
 }
 
 export type InquiryStatus = $Enums.InquiryStatus
@@ -61,6 +70,10 @@ export const InquiryStatus: typeof $Enums.InquiryStatus
 export type ProjectType = $Enums.ProjectType
 
 export const ProjectType: typeof $Enums.ProjectType
+
+export type InquiryKind = $Enums.InquiryKind
+
+export const InquiryKind: typeof $Enums.InquiryKind
 
 /**
  * ##  Prisma Client ʲˢ
@@ -1131,6 +1144,7 @@ export namespace Prisma {
   export type InquiryMinAggregateOutputType = {
     id: number | null
     companyName: string | null
+    inquiryKind: $Enums.InquiryKind | null
     name: string | null
     phone: string | null
     email: string | null
@@ -1155,6 +1169,7 @@ export namespace Prisma {
   export type InquiryMaxAggregateOutputType = {
     id: number | null
     companyName: string | null
+    inquiryKind: $Enums.InquiryKind | null
     name: string | null
     phone: string | null
     email: string | null
@@ -1179,6 +1194,7 @@ export namespace Prisma {
   export type InquiryCountAggregateOutputType = {
     id: number
     companyName: number
+    inquiryKind: number
     name: number
     phone: number
     email: number
@@ -1216,6 +1232,7 @@ export namespace Prisma {
   export type InquiryMinAggregateInputType = {
     id?: true
     companyName?: true
+    inquiryKind?: true
     name?: true
     phone?: true
     email?: true
@@ -1240,6 +1257,7 @@ export namespace Prisma {
   export type InquiryMaxAggregateInputType = {
     id?: true
     companyName?: true
+    inquiryKind?: true
     name?: true
     phone?: true
     email?: true
@@ -1264,6 +1282,7 @@ export namespace Prisma {
   export type InquiryCountAggregateInputType = {
     id?: true
     companyName?: true
+    inquiryKind?: true
     name?: true
     phone?: true
     email?: true
@@ -1376,6 +1395,7 @@ export namespace Prisma {
   export type InquiryGroupByOutputType = {
     id: number
     companyName: string | null
+    inquiryKind: $Enums.InquiryKind
     name: string
     phone: string
     email: string
@@ -1420,6 +1440,7 @@ export namespace Prisma {
   export type InquirySelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     companyName?: boolean
+    inquiryKind?: boolean
     name?: boolean
     phone?: boolean
     email?: boolean
@@ -1447,6 +1468,7 @@ export namespace Prisma {
   export type InquirySelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     companyName?: boolean
+    inquiryKind?: boolean
     name?: boolean
     phone?: boolean
     email?: boolean
@@ -1472,6 +1494,7 @@ export namespace Prisma {
   export type InquirySelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     companyName?: boolean
+    inquiryKind?: boolean
     name?: boolean
     phone?: boolean
     email?: boolean
@@ -1497,6 +1520,7 @@ export namespace Prisma {
   export type InquirySelectScalar = {
     id?: boolean
     companyName?: boolean
+    inquiryKind?: boolean
     name?: boolean
     phone?: boolean
     email?: boolean
@@ -1519,7 +1543,7 @@ export namespace Prisma {
     updatedAt?: boolean
   }
 
-  export type InquiryOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "companyName" | "name" | "phone" | "email" | "projectType" | "status" | "memo" | "projectTypeDetail" | "developmentPurpose" | "keyFeatures" | "referenceLinks" | "expectedTimeline" | "budget" | "inquiryDetails" | "estimatedPrice" | "customerIp" | "isRead" | "source" | "tags" | "createdAt" | "updatedAt", ExtArgs["result"]["inquiry"]>
+  export type InquiryOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "companyName" | "inquiryKind" | "name" | "phone" | "email" | "projectType" | "status" | "memo" | "projectTypeDetail" | "developmentPurpose" | "keyFeatures" | "referenceLinks" | "expectedTimeline" | "budget" | "inquiryDetails" | "estimatedPrice" | "customerIp" | "isRead" | "source" | "tags" | "createdAt" | "updatedAt", ExtArgs["result"]["inquiry"]>
   export type InquiryInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     attachments?: boolean | Inquiry$attachmentsArgs<ExtArgs>
     _count?: boolean | InquiryCountOutputTypeDefaultArgs<ExtArgs>
@@ -1535,6 +1559,7 @@ export namespace Prisma {
     scalars: $Extensions.GetPayloadResult<{
       id: number
       companyName: string | null
+      inquiryKind: $Enums.InquiryKind
       name: string
       phone: string
       email: string
@@ -1981,6 +2006,7 @@ export namespace Prisma {
   interface InquiryFieldRefs {
     readonly id: FieldRef<"Inquiry", 'Int'>
     readonly companyName: FieldRef<"Inquiry", 'String'>
+    readonly inquiryKind: FieldRef<"Inquiry", 'InquiryKind'>
     readonly name: FieldRef<"Inquiry", 'String'>
     readonly phone: FieldRef<"Inquiry", 'String'>
     readonly email: FieldRef<"Inquiry", 'String'>
@@ -4599,6 +4625,7 @@ export namespace Prisma {
   export const InquiryScalarFieldEnum: {
     id: 'id',
     companyName: 'companyName',
+    inquiryKind: 'inquiryKind',
     name: 'name',
     phone: 'phone',
     email: 'email',
@@ -4706,6 +4733,20 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'InquiryKind'
+   */
+  export type EnumInquiryKindFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'InquiryKind'>
+    
+
+
+  /**
+   * Reference to a field of type 'InquiryKind[]'
+   */
+  export type ListEnumInquiryKindFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'InquiryKind[]'>
+    
+
+
+  /**
    * Reference to a field of type 'ProjectType'
    */
   export type EnumProjectTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ProjectType'>
@@ -4791,6 +4832,7 @@ export namespace Prisma {
     NOT?: InquiryWhereInput | InquiryWhereInput[]
     id?: IntFilter<"Inquiry"> | number
     companyName?: StringNullableFilter<"Inquiry"> | string | null
+    inquiryKind?: EnumInquiryKindFilter<"Inquiry"> | $Enums.InquiryKind
     name?: StringFilter<"Inquiry"> | string
     phone?: StringFilter<"Inquiry"> | string
     email?: StringFilter<"Inquiry"> | string
@@ -4817,6 +4859,7 @@ export namespace Prisma {
   export type InquiryOrderByWithRelationInput = {
     id?: SortOrder
     companyName?: SortOrderInput | SortOrder
+    inquiryKind?: SortOrder
     name?: SortOrder
     phone?: SortOrder
     email?: SortOrder
@@ -4846,6 +4889,7 @@ export namespace Prisma {
     OR?: InquiryWhereInput[]
     NOT?: InquiryWhereInput | InquiryWhereInput[]
     companyName?: StringNullableFilter<"Inquiry"> | string | null
+    inquiryKind?: EnumInquiryKindFilter<"Inquiry"> | $Enums.InquiryKind
     name?: StringFilter<"Inquiry"> | string
     phone?: StringFilter<"Inquiry"> | string
     email?: StringFilter<"Inquiry"> | string
@@ -4872,6 +4916,7 @@ export namespace Prisma {
   export type InquiryOrderByWithAggregationInput = {
     id?: SortOrder
     companyName?: SortOrderInput | SortOrder
+    inquiryKind?: SortOrder
     name?: SortOrder
     phone?: SortOrder
     email?: SortOrder
@@ -4905,6 +4950,7 @@ export namespace Prisma {
     NOT?: InquiryScalarWhereWithAggregatesInput | InquiryScalarWhereWithAggregatesInput[]
     id?: IntWithAggregatesFilter<"Inquiry"> | number
     companyName?: StringNullableWithAggregatesFilter<"Inquiry"> | string | null
+    inquiryKind?: EnumInquiryKindWithAggregatesFilter<"Inquiry"> | $Enums.InquiryKind
     name?: StringWithAggregatesFilter<"Inquiry"> | string
     phone?: StringWithAggregatesFilter<"Inquiry"> | string
     email?: StringWithAggregatesFilter<"Inquiry"> | string
@@ -5050,6 +5096,7 @@ export namespace Prisma {
 
   export type InquiryCreateInput = {
     companyName?: string | null
+    inquiryKind?: $Enums.InquiryKind
     name: string
     phone: string
     email?: string
@@ -5076,6 +5123,7 @@ export namespace Prisma {
   export type InquiryUncheckedCreateInput = {
     id?: number
     companyName?: string | null
+    inquiryKind?: $Enums.InquiryKind
     name: string
     phone: string
     email?: string
@@ -5101,6 +5149,7 @@ export namespace Prisma {
 
   export type InquiryUpdateInput = {
     companyName?: NullableStringFieldUpdateOperationsInput | string | null
+    inquiryKind?: EnumInquiryKindFieldUpdateOperationsInput | $Enums.InquiryKind
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
@@ -5127,6 +5176,7 @@ export namespace Prisma {
   export type InquiryUncheckedUpdateInput = {
     id?: IntFieldUpdateOperationsInput | number
     companyName?: NullableStringFieldUpdateOperationsInput | string | null
+    inquiryKind?: EnumInquiryKindFieldUpdateOperationsInput | $Enums.InquiryKind
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
@@ -5153,6 +5203,7 @@ export namespace Prisma {
   export type InquiryCreateManyInput = {
     id?: number
     companyName?: string | null
+    inquiryKind?: $Enums.InquiryKind
     name: string
     phone: string
     email?: string
@@ -5177,6 +5228,7 @@ export namespace Prisma {
 
   export type InquiryUpdateManyMutationInput = {
     companyName?: NullableStringFieldUpdateOperationsInput | string | null
+    inquiryKind?: EnumInquiryKindFieldUpdateOperationsInput | $Enums.InquiryKind
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
@@ -5202,6 +5254,7 @@ export namespace Prisma {
   export type InquiryUncheckedUpdateManyInput = {
     id?: IntFieldUpdateOperationsInput | number
     companyName?: NullableStringFieldUpdateOperationsInput | string | null
+    inquiryKind?: EnumInquiryKindFieldUpdateOperationsInput | $Enums.InquiryKind
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
@@ -5369,6 +5422,13 @@ export namespace Prisma {
     not?: NestedStringNullableFilter<$PrismaModel> | string | null
   }
 
+  export type EnumInquiryKindFilter<$PrismaModel = never> = {
+    equals?: $Enums.InquiryKind | EnumInquiryKindFieldRefInput<$PrismaModel>
+    in?: $Enums.InquiryKind[] | ListEnumInquiryKindFieldRefInput<$PrismaModel>
+    notIn?: $Enums.InquiryKind[] | ListEnumInquiryKindFieldRefInput<$PrismaModel>
+    not?: NestedEnumInquiryKindFilter<$PrismaModel> | $Enums.InquiryKind
+  }
+
   export type StringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -5451,6 +5511,7 @@ export namespace Prisma {
   export type InquiryCountOrderByAggregateInput = {
     id?: SortOrder
     companyName?: SortOrder
+    inquiryKind?: SortOrder
     name?: SortOrder
     phone?: SortOrder
     email?: SortOrder
@@ -5481,6 +5542,7 @@ export namespace Prisma {
   export type InquiryMaxOrderByAggregateInput = {
     id?: SortOrder
     companyName?: SortOrder
+    inquiryKind?: SortOrder
     name?: SortOrder
     phone?: SortOrder
     email?: SortOrder
@@ -5505,6 +5567,7 @@ export namespace Prisma {
   export type InquiryMinOrderByAggregateInput = {
     id?: SortOrder
     companyName?: SortOrder
+    inquiryKind?: SortOrder
     name?: SortOrder
     phone?: SortOrder
     email?: SortOrder
@@ -5563,6 +5626,16 @@ export namespace Prisma {
     _count?: NestedIntNullableFilter<$PrismaModel>
     _min?: NestedStringNullableFilter<$PrismaModel>
     _max?: NestedStringNullableFilter<$PrismaModel>
+  }
+
+  export type EnumInquiryKindWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.InquiryKind | EnumInquiryKindFieldRefInput<$PrismaModel>
+    in?: $Enums.InquiryKind[] | ListEnumInquiryKindFieldRefInput<$PrismaModel>
+    notIn?: $Enums.InquiryKind[] | ListEnumInquiryKindFieldRefInput<$PrismaModel>
+    not?: NestedEnumInquiryKindWithAggregatesFilter<$PrismaModel> | $Enums.InquiryKind
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumInquiryKindFilter<$PrismaModel>
+    _max?: NestedEnumInquiryKindFilter<$PrismaModel>
   }
 
   export type StringWithAggregatesFilter<$PrismaModel = never> = {
@@ -5740,6 +5813,10 @@ export namespace Prisma {
     set?: string | null
   }
 
+  export type EnumInquiryKindFieldUpdateOperationsInput = {
+    set?: $Enums.InquiryKind
+  }
+
   export type StringFieldUpdateOperationsInput = {
     set?: string
   }
@@ -5846,6 +5923,13 @@ export namespace Prisma {
     startsWith?: string | StringFieldRefInput<$PrismaModel>
     endsWith?: string | StringFieldRefInput<$PrismaModel>
     not?: NestedStringNullableFilter<$PrismaModel> | string | null
+  }
+
+  export type NestedEnumInquiryKindFilter<$PrismaModel = never> = {
+    equals?: $Enums.InquiryKind | EnumInquiryKindFieldRefInput<$PrismaModel>
+    in?: $Enums.InquiryKind[] | ListEnumInquiryKindFieldRefInput<$PrismaModel>
+    notIn?: $Enums.InquiryKind[] | ListEnumInquiryKindFieldRefInput<$PrismaModel>
+    not?: NestedEnumInquiryKindFilter<$PrismaModel> | $Enums.InquiryKind
   }
 
   export type NestedStringFilter<$PrismaModel = never> = {
@@ -5956,6 +6040,16 @@ export namespace Prisma {
     gt?: number | IntFieldRefInput<$PrismaModel>
     gte?: number | IntFieldRefInput<$PrismaModel>
     not?: NestedIntNullableFilter<$PrismaModel> | number | null
+  }
+
+  export type NestedEnumInquiryKindWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.InquiryKind | EnumInquiryKindFieldRefInput<$PrismaModel>
+    in?: $Enums.InquiryKind[] | ListEnumInquiryKindFieldRefInput<$PrismaModel>
+    notIn?: $Enums.InquiryKind[] | ListEnumInquiryKindFieldRefInput<$PrismaModel>
+    not?: NestedEnumInquiryKindWithAggregatesFilter<$PrismaModel> | $Enums.InquiryKind
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumInquiryKindFilter<$PrismaModel>
+    _max?: NestedEnumInquiryKindFilter<$PrismaModel>
   }
 
   export type NestedStringWithAggregatesFilter<$PrismaModel = never> = {
@@ -6085,6 +6179,7 @@ export namespace Prisma {
 
   export type InquiryCreateWithoutAttachmentsInput = {
     companyName?: string | null
+    inquiryKind?: $Enums.InquiryKind
     name: string
     phone: string
     email?: string
@@ -6110,6 +6205,7 @@ export namespace Prisma {
   export type InquiryUncheckedCreateWithoutAttachmentsInput = {
     id?: number
     companyName?: string | null
+    inquiryKind?: $Enums.InquiryKind
     name: string
     phone: string
     email?: string
@@ -6150,6 +6246,7 @@ export namespace Prisma {
 
   export type InquiryUpdateWithoutAttachmentsInput = {
     companyName?: NullableStringFieldUpdateOperationsInput | string | null
+    inquiryKind?: EnumInquiryKindFieldUpdateOperationsInput | $Enums.InquiryKind
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
@@ -6175,6 +6272,7 @@ export namespace Prisma {
   export type InquiryUncheckedUpdateWithoutAttachmentsInput = {
     id?: IntFieldUpdateOperationsInput | number
     companyName?: NullableStringFieldUpdateOperationsInput | string | null
+    inquiryKind?: EnumInquiryKindFieldUpdateOperationsInput | $Enums.InquiryKind
     name?: StringFieldUpdateOperationsInput | string
     phone?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string

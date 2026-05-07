@@ -11,6 +11,7 @@ datasource db {
 model Inquiry {
   id                 Int                 @id @default(autoincrement())
   companyName        String?
+  inquiryKind        InquiryKind         @default(NEW_DEVELOPMENT)
   name               String
   phone              String
   email              String              @default("")
@@ -58,6 +59,12 @@ enum ProjectType {
   GAME
   SERVICE_PROGRAM
   OTHER
+}
+
+enum InquiryKind {
+  NEW_DEVELOPMENT
+  FEATURE_MODIFICATION
+  ISSUE_RESOLUTION
 }
 
 model AdminUser {

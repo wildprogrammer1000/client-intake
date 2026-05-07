@@ -124,6 +124,7 @@ exports.Prisma.TransactionIsolationLevel = makeStrictEnum({
 exports.Prisma.InquiryScalarFieldEnum = {
   id: 'id',
   companyName: 'companyName',
+  inquiryKind: 'inquiryKind',
   name: 'name',
   phone: 'phone',
   email: 'email',
@@ -178,6 +179,12 @@ exports.Prisma.NullsOrder = {
   first: 'first',
   last: 'last'
 };
+exports.InquiryKind = exports.$Enums.InquiryKind = {
+  NEW_DEVELOPMENT: 'NEW_DEVELOPMENT',
+  FEATURE_MODIFICATION: 'FEATURE_MODIFICATION',
+  ISSUE_RESOLUTION: 'ISSUE_RESOLUTION'
+};
+
 exports.ProjectType = exports.$Enums.ProjectType = {
   WEBSITE: 'WEBSITE',
   MOBILE_APP: 'MOBILE_APP',

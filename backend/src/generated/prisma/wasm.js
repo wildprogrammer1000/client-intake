@@ -96,6 +96,7 @@ exports.Prisma.TransactionIsolationLevel = makeStrictEnum({
 exports.Prisma.InquiryScalarFieldEnum = {
   id: 'id',
   companyName: 'companyName',
+  inquiryKind: 'inquiryKind',
   name: 'name',
   phone: 'phone',
   email: 'email',
@@ -164,6 +165,12 @@ exports.ProjectType = exports.$Enums.ProjectType = {
   OTHER: 'OTHER'
 };
 
+exports.InquiryKind = exports.$Enums.InquiryKind = {
+  NEW_DEVELOPMENT: 'NEW_DEVELOPMENT',
+  FEATURE_MODIFICATION: 'FEATURE_MODIFICATION',
+  ISSUE_RESOLUTION: 'ISSUE_RESOLUTION'
+};
+
 exports.Prisma.ModelName = {
   Inquiry: 'Inquiry',
   InquiryAttachment: 'InquiryAttachment',
@@ -180,7 +187,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "/workspace/backend/src/generated/prisma",
+      "value": "/Users/seungjuh/Projects/Inquiry/backend/src/generated/prisma",
       "fromEnvVar": null
     },
     "config": {
@@ -189,16 +196,17 @@ const config = {
     "binaryTargets": [
       {
         "fromEnvVar": null,
-        "value": "debian-openssl-3.0.x",
+        "value": "darwin-arm64",
         "native": true
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "/workspace/backend/prisma/schema.prisma",
+    "sourceFilePath": "/Users/seungjuh/Projects/Inquiry/backend/prisma/schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
-    "rootEnvPath": null
+    "rootEnvPath": null,
+    "schemaEnvPath": "../../../.env"
   },
   "relativePath": "../../../prisma",
   "clientVersion": "6.19.3",
@@ -216,13 +224,13 @@ const config = {
       }
     }
   },
-  "inlineSchema": "generator client {\n  provider = \"prisma-client-js\"\n  output   = \"../src/generated/prisma\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel Inquiry {\n  id                 Int                 @id @default(autoincrement())\n  companyName        String?\n  name               String\n  phone              String\n  email              String              @default(\"\")\n  projectType        ProjectType\n  status             InquiryStatus       @default(WAITING)\n  memo               String?\n  projectTypeDetail  String?\n  developmentPurpose String\n  keyFeatures        String\n  referenceLinks     String?\n  expectedTimeline   String\n  budget             String\n  inquiryDetails     String\n  estimatedPrice     Decimal?            @db.Decimal(12, 2)\n  customerIp         String?             @db.VarChar(45)\n  isRead             Boolean             @default(false)\n  source             String?\n  tags               String[]            @default([])\n  attachments        InquiryAttachment[]\n  createdAt          DateTime            @default(now())\n  updatedAt          DateTime            @updatedAt\n}\n\nmodel InquiryAttachment {\n  id        Int      @id @default(autoincrement())\n  inquiryId Int\n  inquiry   Inquiry  @relation(fields: [inquiryId], references: [id], onDelete: Cascade)\n  url       String\n  fileName  String?\n  createdAt DateTime @default(now())\n\n  @@index([inquiryId])\n  @@map(\"inquiry_attachments\")\n}\n\nenum InquiryStatus {\n  WAITING\n  IN_PROGRESS\n  COMPLETED\n}\n\nenum ProjectType {\n  WEBSITE\n  MOBILE_APP\n  GAME\n  SERVICE_PROGRAM\n  OTHER\n}\n\nmodel AdminUser {\n  id           Int      @id @default(autoincrement())\n  userId       String   @unique\n  name         String\n  passwordHash String\n  isActive     Boolean  @default(true)\n  createdAt    DateTime @default(now())\n  updatedAt    DateTime @updatedAt\n}\n",
-  "inlineSchemaHash": "370ad0a1ec765eb0baa008881af001d75e26850b16cfbc45ab539d1883e525ef",
+  "inlineSchema": "generator client {\n  provider = \"prisma-client-js\"\n  output   = \"../src/generated/prisma\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel Inquiry {\n  id                 Int                 @id @default(autoincrement())\n  companyName        String?\n  inquiryKind        InquiryKind         @default(NEW_DEVELOPMENT)\n  name               String\n  phone              String\n  email              String              @default(\"\")\n  projectType        ProjectType\n  status             InquiryStatus       @default(WAITING)\n  memo               String?\n  projectTypeDetail  String?\n  developmentPurpose String\n  keyFeatures        String\n  referenceLinks     String?\n  expectedTimeline   String\n  budget             String\n  inquiryDetails     String\n  estimatedPrice     Decimal?            @db.Decimal(12, 2)\n  customerIp         String?             @db.VarChar(45)\n  isRead             Boolean             @default(false)\n  source             String?\n  tags               String[]            @default([])\n  attachments        InquiryAttachment[]\n  createdAt          DateTime            @default(now())\n  updatedAt          DateTime            @updatedAt\n}\n\nmodel InquiryAttachment {\n  id        Int      @id @default(autoincrement())\n  inquiryId Int\n  inquiry   Inquiry  @relation(fields: [inquiryId], references: [id], onDelete: Cascade)\n  url       String\n  fileName  String?\n  createdAt DateTime @default(now())\n\n  @@index([inquiryId])\n  @@map(\"inquiry_attachments\")\n}\n\nenum InquiryStatus {\n  WAITING\n  IN_PROGRESS\n  COMPLETED\n}\n\nenum ProjectType {\n  WEBSITE\n  MOBILE_APP\n  GAME\n  SERVICE_PROGRAM\n  OTHER\n}\n\nenum InquiryKind {\n  NEW_DEVELOPMENT\n  FEATURE_MODIFICATION\n  ISSUE_RESOLUTION\n}\n\nmodel AdminUser {\n  id           Int      @id @default(autoincrement())\n  userId       String   @unique\n  name         String\n  passwordHash String\n  isActive     Boolean  @default(true)\n  createdAt    DateTime @default(now())\n  updatedAt    DateTime @updatedAt\n}\n",
+  "inlineSchemaHash": "df9fe248e6948d5208adaf4284ae6b7c26f8cc9dfe1fadf7a9ca7446906b7e2a",
   "copyEngine": true
 }
 config.dirname = '/'
 
-config.runtimeDataModel = JSON.parse("{\"models\":{\"Inquiry\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"companyName\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"phone\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"email\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"projectType\",\"kind\":\"enum\",\"type\":\"ProjectType\"},{\"name\":\"status\",\"kind\":\"enum\",\"type\":\"InquiryStatus\"},{\"name\":\"memo\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"projectTypeDetail\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"developmentPurpose\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"keyFeatures\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"referenceLinks\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"expectedTimeline\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"budget\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"inquiryDetails\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"estimatedPrice\",\"kind\":\"scalar\",\"type\":\"Decimal\"},{\"name\":\"customerIp\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"isRead\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"source\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"tags\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"attachments\",\"kind\":\"object\",\"type\":\"InquiryAttachment\",\"relationName\":\"InquiryToInquiryAttachment\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"InquiryAttachment\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"inquiryId\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"inquiry\",\"kind\":\"object\",\"type\":\"Inquiry\",\"relationName\":\"InquiryToInquiryAttachment\"},{\"name\":\"url\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"fileName\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":\"inquiry_attachments\"},\"AdminUser\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"passwordHash\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"isActive\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null}},\"enums\":{},\"types\":{}}")
+config.runtimeDataModel = JSON.parse("{\"models\":{\"Inquiry\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"companyName\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"inquiryKind\",\"kind\":\"enum\",\"type\":\"InquiryKind\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"phone\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"email\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"projectType\",\"kind\":\"enum\",\"type\":\"ProjectType\"},{\"name\":\"status\",\"kind\":\"enum\",\"type\":\"InquiryStatus\"},{\"name\":\"memo\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"projectTypeDetail\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"developmentPurpose\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"keyFeatures\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"referenceLinks\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"expectedTimeline\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"budget\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"inquiryDetails\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"estimatedPrice\",\"kind\":\"scalar\",\"type\":\"Decimal\"},{\"name\":\"customerIp\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"isRead\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"source\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"tags\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"attachments\",\"kind\":\"object\",\"type\":\"InquiryAttachment\",\"relationName\":\"InquiryToInquiryAttachment\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"InquiryAttachment\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"inquiryId\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"inquiry\",\"kind\":\"object\",\"type\":\"Inquiry\",\"relationName\":\"InquiryToInquiryAttachment\"},{\"name\":\"url\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"fileName\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":\"inquiry_attachments\"},\"AdminUser\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"passwordHash\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"isActive\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null}},\"enums\":{},\"types\":{}}")
 defineDmmfProperty(exports.Prisma, config.runtimeDataModel)
 config.engineWasm = {
   getRuntime: async () => require('./query_engine_bg.js'),

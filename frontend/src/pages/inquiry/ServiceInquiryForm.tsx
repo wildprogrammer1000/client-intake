@@ -14,7 +14,6 @@ import {
 import { useMemo, useState } from 'react'
 import type { ChangeEvent, FormEvent } from 'react'
 import { INQUIRY_KIND_LABEL, type InquiryServiceKind } from '../../inquiry/inquiryPaths'
-import { SERVICE_INQUIRY_FORM_COPY } from '../../inquiry/serviceInquiryFormCopy'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:4000'
 
@@ -53,7 +52,17 @@ type ServiceInquiryFormProps = {
 }
 
 export default function ServiceInquiryForm({ kind }: ServiceInquiryFormProps) {
-  const copy = SERVICE_INQUIRY_FORM_COPY[kind]
+  const inquiryKindForApi =
+    kind === 'new-service'
+      ? 'NEW_DEVELOPMENT'
+      : kind === 'feature-extension'
+        ? 'FEATURE_MODIFICATION'
+        : 'ISSUE_RESOLUTION'
+  const maxFilesByKind = {
+    'new-service': 5,
+    'feature-extension': 8,
+    'issue-resolution': 3,
+  } as const
   const [form, setForm] = useState<ServiceInquiryFormState>(initialFormValue)
   const [files, setFiles] = useState<File[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -68,16 +77,31 @@ export default function ServiceInquiryForm({ kind }: ServiceInquiryFormProps) {
   })
 
   const canSubmit = useMemo(() => {
-    return Boolean(
-      form.name.trim() &&
-        form.phone.trim() &&
+    const hasBasicFields = Boolean(form.name.trim() && form.phone.trim())
+
+    if (!hasBasicFields) {
+      return false
+    }
+
+    if (kind === 'new-service') {
+      return Boolean(
         form.developmentPurpose.trim() &&
-        form.keyFeatures.trim() &&
-        form.expectedTimeline.trim() &&
-        form.budget.trim() &&
-        form.inquiryDetails.trim(),
+          form.keyFeatures.trim() &&
+          form.expectedTimeline.trim() &&
+          form.budget.trim() &&
+          form.inquiryDetails.trim(),
+      )
+    }
+
+    if (kind === 'feature-extension') {
+      return Boolean(form.inquiryDetails.trim())
+    }
+
+    return Boolean(
+      form.inquiryDetails.trim() &&
+        form.expectedTimeline.trim(),
     )
-  }, [form])
+  }, [form, kind])
 
   const handleTextChange =
     (field: keyof ServiceInquiryFormState) =>
@@ -86,7 +110,20 @@ export default function ServiceInquiryForm({ kind }: ServiceInquiryFormProps) {
     }
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setFiles(Array.from(event.target.files ?? []))
+    const selectedFiles = Array.from(event.target.files ?? [])
+    const maxFiles = maxFilesByKind[kind]
+
+    if (selectedFiles.length > maxFiles) {
+      setFiles(selectedFiles.slice(0, maxFiles))
+      setToast({
+        open: true,
+        message: `첨부파일은 최대 ${maxFiles}개까지 업로드할 수 있습니다.`,
+        severity: 'error',
+      })
+      return
+    }
+
+    setFiles(selectedFiles)
   }
 
   const uploadFiles = async (): Promise<{ url: string; fileName: string }[]> => {
@@ -154,17 +191,31 @@ export default function ServiceInquiryForm({ kind }: ServiceInquiryFormProps) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
+          inquiryKind: inquiryKindForApi,
           name: form.name.trim(),
           phone: form.phone.trim(),
           email: form.email.trim(),
           projectType: form.projectType,
           projectTypeDetail: form.projectTypeDetail.trim() || undefined,
-          developmentPurpose: form.developmentPurpose.trim(),
-          keyFeatures: form.keyFeatures.trim(),
-          referenceLinks: form.referenceLinks.trim() || undefined,
-          expectedTimeline: form.expectedTimeline.trim(),
-          budget: form.budget.trim(),
-          inquiryDetails: inquiryDetailsForApi,
+          developmentPurpose:
+            kind === 'new-service'
+              ? form.developmentPurpose.trim()
+              : form.inquiryDetails.trim(),
+          keyFeatures:
+            kind === 'new-service'
+              ? form.keyFeatures.trim()
+              : form.inquiryDetails.trim(),
+          referenceLinks:
+            kind === 'new-service' ? form.referenceLinks.trim() || undefined : undefined,
+          expectedTimeline:
+            kind === 'new-service' || kind === 'issue-resolution'
+              ? form.expectedTimeline.trim()
+              : '협의 필요',
+          budget: kind === 'new-service' ? form.budget.trim() : '미정',
+          inquiryDetails:
+            kind === 'new-service'
+              ? inquiryDetailsForApi
+              : `${inquiryDetailsForApi}\n\n${form.inquiryDetails.trim()}`,
           attachments,
           ...(source ? { source } : {}),
         }),
@@ -195,46 +246,50 @@ export default function ServiceInquiryForm({ kind }: ServiceInquiryFormProps) {
     }
   }
 
-  const ph = copy.placeholders
+  const isNewService = kind === 'new-service'
+  const isFeatureExtension = kind === 'feature-extension'
+  const isIssueResolution = kind === 'issue-resolution'
+  const projectTypeLabel = isNewService ? '만들고 싶은 서비스 유형' : '운영중인 서비스 유형'
+  const detailLabel = isNewService ? '추가 정보' : isFeatureExtension ? '원하는 추가/수정 내용' : '오류 증상/내용'
 
   return (
     <>
       <Box component="form" onSubmit={handleSubmit}>
         <Stack spacing={3}>
-          <Typography variant="h6">{copy.sectionBasic}</Typography>
+          <Typography variant="h6">기본 정보</Typography>
           <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
             <TextField
               fullWidth
               required
-              label={copy.labels.name}
-              placeholder={ph.name}
+              label="이름"
+              placeholder="홍길동"
               value={form.name}
               onChange={handleTextChange('name')}
             />
             <TextField
               fullWidth
               required
-              label={copy.labels.phone}
-              placeholder={ph.phone}
+              label="전화번호"
+              placeholder="010-1234-5678"
               value={form.phone}
               onChange={handleTextChange('phone')}
             />
             <TextField
               fullWidth
               type="email"
-              label={copy.labels.email}
-              placeholder={ph.email}
+              label="이메일"
+              placeholder="name@example.com (선택)"
               value={form.email}
               onChange={handleTextChange('email')}
             />
           </Stack>
 
-          <Typography variant="h6">{copy.sectionProject}</Typography>
+          <Typography variant="h6">신청 정보</Typography>
           <FormControl fullWidth required>
-            <InputLabel id={`project-type-label-${kind}`}>{copy.labels.projectType}</InputLabel>
+            <InputLabel id={`project-type-label-${kind}`}>{projectTypeLabel}</InputLabel>
             <Select
               labelId={`project-type-label-${kind}`}
-              label={copy.labels.projectType}
+              label={projectTypeLabel}
               value={form.projectType}
               onChange={(event) => {
                 setForm((prev) => ({
@@ -254,10 +309,75 @@ export default function ServiceInquiryForm({ kind }: ServiceInquiryFormProps) {
           {form.projectType === 'OTHER' ? (
             <TextField
               fullWidth
-              label={copy.labels.projectTypeDetail}
-              placeholder={ph.projectTypeDetail}
+              label="서비스 유형 상세"
+              placeholder="예: B2B 예약/정산 웹 서비스"
               value={form.projectTypeDetail}
               onChange={handleTextChange('projectTypeDetail')}
+            />
+          ) : null}
+
+          {isNewService ? (
+            <>
+              <TextField
+                fullWidth
+                required
+                multiline
+                minRows={2}
+                label="개발 목적"
+                placeholder="예: 신규 창업 MVP를 출시하고 싶습니다."
+                value={form.developmentPurpose}
+                onChange={handleTextChange('developmentPurpose')}
+              />
+              <TextField
+                fullWidth
+                required
+                multiline
+                minRows={3}
+                label="필요한 기능"
+                placeholder="예: 회원가입/로그인, 예약/결제, 관리자 페이지"
+                value={form.keyFeatures}
+                onChange={handleTextChange('keyFeatures')}
+              />
+              <TextField
+                fullWidth
+                multiline
+                minRows={2}
+                label="참고 서비스"
+                placeholder="예: https://example.com"
+                value={form.referenceLinks}
+                onChange={handleTextChange('referenceLinks')}
+              />
+              <TextField
+                fullWidth
+                required
+                multiline
+                minRows={2}
+                label="희망 일정"
+                placeholder="예: 2개월 내 첫 버전 오픈"
+                value={form.expectedTimeline}
+                onChange={handleTextChange('expectedTimeline')}
+              />
+              <TextField
+                fullWidth
+                required
+                label="예산"
+                placeholder="예: 500만 ~ 1,000만원"
+                value={form.budget}
+                onChange={handleTextChange('budget')}
+              />
+            </>
+          ) : null}
+
+          {isIssueResolution ? (
+            <TextField
+              fullWidth
+              required
+              multiline
+              minRows={2}
+              label="희망 일정"
+              placeholder="예: 영업일 기준 3일 내 원인 파악"
+              value={form.expectedTimeline}
+              onChange={handleTextChange('expectedTimeline')}
             />
           ) : null}
 
@@ -265,76 +385,39 @@ export default function ServiceInquiryForm({ kind }: ServiceInquiryFormProps) {
             fullWidth
             required
             multiline
-            minRows={2}
-            label={copy.labels.developmentPurpose}
-            placeholder={ph.developmentPurpose}
-            value={form.developmentPurpose}
-            onChange={handleTextChange('developmentPurpose')}
-          />
-          <TextField
-            fullWidth
-            required
-            multiline
-            minRows={3}
-            label={copy.labels.keyFeatures}
-            placeholder={ph.keyFeatures}
-            value={form.keyFeatures}
-            onChange={handleTextChange('keyFeatures')}
-          />
-          <TextField
-            fullWidth
-            multiline
-            minRows={2}
-            label={copy.labels.referenceLinks}
-            placeholder={ph.referenceLinks}
-            value={form.referenceLinks}
-            onChange={handleTextChange('referenceLinks')}
-          />
-
-          <Typography variant="h6">{copy.sectionSchedule}</Typography>
-          <TextField
-            fullWidth
-            required
-            multiline
-            minRows={2}
-            label={copy.labels.expectedTimeline}
-            placeholder={ph.expectedTimeline}
-            value={form.expectedTimeline}
-            onChange={handleTextChange('expectedTimeline')}
-          />
-          <TextField
-            fullWidth
-            required
-            label={copy.labels.budget}
-            placeholder={ph.budget}
-            value={form.budget}
-            onChange={handleTextChange('budget')}
-          />
-
-          <Typography variant="h6">{copy.sectionDetail}</Typography>
-          <TextField
-            fullWidth
-            required
-            multiline
             minRows={5}
-            label={copy.labels.inquiryDetails}
-            placeholder={ph.inquiryDetails}
+            label={detailLabel}
+            placeholder={
+              isNewService
+                ? '추가로 전달하고 싶은 정보가 있다면 자유롭게 작성해 주세요.'
+                : isFeatureExtension
+                  ? '운영 중인 서비스에서 어떤 기능을 어떻게 추가/수정하고 싶은지 작성해 주세요.'
+                  : '발생한 오류 증상, 발생 시점, 재현 방법 등을 작성해 주세요.'
+            }
             value={form.inquiryDetails}
             onChange={handleTextChange('inquiryDetails')}
           />
 
-          <Typography variant="h6">{copy.sectionFiles}</Typography>
-          <TextField
-            fullWidth
-            type="file"
-            slotProps={{ htmlInput: { multiple: true } }}
-            onChange={handleFileChange}
-            helperText={copy.fileHelper}
-          />
-          {files.length ? (
-            <Alert severity="info">
-              선택된 파일: {files.map((file) => file.name).join(', ')}
-            </Alert>
+          {isNewService || isFeatureExtension ? (
+            <>
+              <Typography variant="h6">첨부 자료 (선택)</Typography>
+              <TextField
+                fullWidth
+                type="file"
+                slotProps={{ htmlInput: { multiple: true } }}
+                onChange={handleFileChange}
+                helperText={
+                  isNewService
+                    ? '기획서, 화면 설계서, 디자인 시안 등 (최대 5개)'
+                    : '변경 요청서, 현재 화면 캡처, 관련 문서 등 (최대 8개)'
+                }
+              />
+              {files.length ? (
+                <Alert severity="info">
+                  선택된 파일: {files.map((file) => file.name).join(', ')}
+                </Alert>
+              ) : null}
+            </>
           ) : null}
 
           <Button type="submit" variant="contained" size="large" disabled={!canSubmit || isSubmitting}>

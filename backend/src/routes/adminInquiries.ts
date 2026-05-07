@@ -7,6 +7,7 @@ import { prisma } from '../lib/prisma.js'
 const listQuerySchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
   pageSize: z.coerce.number().int().min(1).max(100).default(20),
+  inquiryKind: z.enum(['NEW_DEVELOPMENT', 'FEATURE_MODIFICATION', 'ISSUE_RESOLUTION']).optional(),
   projectType: z
     .enum(['WEBSITE', 'MOBILE_APP', 'GAME', 'SERVICE_PROGRAM', 'OTHER'])
     .optional(),
@@ -60,10 +61,11 @@ adminInquiryRouter.get('/', async (req, res) => {
       })
     }
 
-    const { page, pageSize, projectType, status, keyword } = parsed.data
+    const { page, pageSize, inquiryKind, projectType, status, keyword } = parsed.data
     const skip = (page - 1) * pageSize
 
     const where = {
+      ...(inquiryKind ? { inquiryKind } : {}),
       ...(projectType ? { projectType } : {}),
       ...(status ? { status } : {}),
       ...(keyword
@@ -88,6 +90,7 @@ adminInquiryRouter.get('/', async (req, res) => {
         take: pageSize,
         select: {
           id: true,
+          inquiryKind: true,
           companyName: true,
           name: true,
           phone: true,
