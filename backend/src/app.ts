@@ -1,4 +1,3 @@
-import cors from 'cors'
 import express from 'express'
 import helmet from 'helmet'
 import { adminAuthRouter } from './routes/adminAuth.js'
@@ -10,13 +9,6 @@ import { uploadRouter } from './routes/uploads.js'
 export const app = express()
 
 app.use(helmet())
-app.use(
-  cors({
-    origin: process.env.CORS_ORIGIN?.split(',').map((origin) => origin.trim()) ?? [
-      'http://localhost:5173',
-    ],
-  }),
-)
 app.use(express.json())
 
 app.get('/', (_req, res) => {
