@@ -19,6 +19,7 @@ import { formatPhoneNumber } from '../../inquiry/phoneNumber'
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:4000'
 
 type ProjectType = 'WEBSITE' | 'MOBILE_APP' | 'GAME' | 'SERVICE_PROGRAM' | 'OTHER'
+type InquiryKindForApi = 'NEW_DEVELOPMENT' | 'FEATURE_MODIFICATION' | 'ISSUE_RESOLUTION'
 
 export type ServiceInquiryFormState = {
   name: string
@@ -53,12 +54,35 @@ type ServiceInquiryFormProps = {
 }
 
 export default function ServiceInquiryForm({ kind }: ServiceInquiryFormProps) {
-  const inquiryKindForApi =
+  const inquiryKindForApi: InquiryKindForApi =
     kind === 'new-service'
       ? 'NEW_DEVELOPMENT'
       : kind === 'feature-extension'
         ? 'FEATURE_MODIFICATION'
         : 'ISSUE_RESOLUTION'
+  const maxTotalSizeByKind: Record<typeof kind, number> = {
+    'new-service': 80 * 1024 * 1024,
+    'feature-extension': 80 * 1024 * 1024,
+    'issue-resolution': 300 * 1024 * 1024,
+  }
+  const allowedTypesByKind: Record<typeof kind, string[]> = {
+    'new-service': ['image/jpeg', 'image/png', 'image/webp', 'application/pdf', 'application/zip', 'application/x-zip-compressed'],
+    'feature-extension': ['image/jpeg', 'image/png', 'image/webp', 'application/pdf', 'application/zip', 'application/x-zip-compressed'],
+    'issue-resolution': [
+      'image/jpeg',
+      'image/png',
+      'image/webp',
+      'application/pdf',
+      'application/zip',
+      'application/x-zip-compressed',
+      'video/mp4',
+      'video/quicktime',
+      'video/webm',
+    ],
+  }
+  const imageAndPdfMaxSize = 20 * 1024 * 1024
+  const videoMaxSize = 200 * 1024 * 1024
+  const zipMaxSize = 200 * 1024 * 1024
   const maxFilesByKind = {
     'new-service': 5,
     'feature-extension': 8,
@@ -118,12 +142,67 @@ export default function ServiceInquiryForm({ kind }: ServiceInquiryFormProps) {
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = Array.from(event.target.files ?? [])
     const maxFiles = maxFilesByKind[kind]
+    const allowedTypes = allowedTypesByKind[kind]
+    const totalSize = selectedFiles.reduce((acc, file) => acc + file.size, 0)
+    const maxTotalSize = maxTotalSizeByKind[kind]
 
     if (selectedFiles.length > maxFiles) {
       setFiles(selectedFiles.slice(0, maxFiles))
       setToast({
         open: true,
         message: `첨부파일은 최대 ${maxFiles}개까지 업로드할 수 있습니다.`,
+        severity: 'error',
+      })
+      return
+    }
+
+    const invalidTypeFile = selectedFiles.find((file) => !allowedTypes.includes(file.type))
+    if (invalidTypeFile) {
+      setFiles([])
+      setToast({
+        open: true,
+        message:
+          kind === 'issue-resolution'
+            ? '허용되지 않는 파일 형식이 있습니다. 이미지(jpg/png/webp), PDF, ZIP, 영상(mp4/mov/webm)만 업로드할 수 있습니다. 지원하지 않는 형식은 ZIP으로 압축해서 첨부해주세요.'
+            : '허용되지 않는 파일 형식이 있습니다. 이미지(jpg/png/webp), PDF, ZIP만 업로드할 수 있습니다. 지원하지 않는 형식은 ZIP으로 압축해서 첨부해주세요.',
+        severity: 'error',
+      })
+      return
+    }
+
+    const oversizeFile = selectedFiles.find((file) => {
+      const isVideo = file.type.startsWith('video/')
+      const isZip = file.type === 'application/zip' || file.type === 'application/x-zip-compressed'
+      if (isVideo) {
+        return file.size > videoMaxSize
+      }
+      if (isZip) {
+        return file.size > zipMaxSize
+      }
+      return file.size > imageAndPdfMaxSize
+    })
+    if (oversizeFile) {
+      const isVideo = oversizeFile.type.startsWith('video/')
+      const isZip = oversizeFile.type === 'application/zip' || oversizeFile.type === 'application/x-zip-compressed'
+      setFiles([])
+      setToast({
+        open: true,
+        message:
+          isVideo
+            ? '영상 파일은 200MB 이하만 업로드할 수 있습니다.'
+            : isZip
+              ? 'ZIP 파일은 200MB 이하만 업로드할 수 있습니다.'
+              : '이미지/PDF 파일은 20MB 이하만 업로드할 수 있습니다.',
+        severity: 'error',
+      })
+      return
+    }
+
+    if (totalSize > maxTotalSize) {
+      setFiles([])
+      setToast({
+        open: true,
+        message: `첨부파일 총 용량은 ${Math.floor(maxTotalSize / (1024 * 1024))}MB 이하만 업로드할 수 있습니다.`,
         severity: 'error',
       })
       return
@@ -148,6 +227,8 @@ export default function ServiceInquiryForm({ kind }: ServiceInquiryFormProps) {
         body: JSON.stringify({
           fileName: file.name,
           contentType: file.type || 'application/octet-stream',
+          fileSize: file.size,
+          inquiryKind: inquiryKindForApi,
         }),
       })
 
@@ -165,15 +246,20 @@ export default function ServiceInquiryForm({ kind }: ServiceInquiryFormProps) {
 
       const presignedData = (await presignedResponse.json()) as {
         uploadUrl: string
+        uploadFields: Record<string, string>
         fileUrl: string
       }
 
+      const formData = new FormData()
+      Object.entries(presignedData.uploadFields).forEach(([key, value]) => {
+        formData.append(key, value)
+      })
+      formData.append('Content-Type', file.type || 'application/octet-stream')
+      formData.append('file', file)
+
       const uploadResponse = await fetch(presignedData.uploadUrl, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': file.type || 'application/octet-stream',
-        },
-        body: file,
+        method: 'POST',
+        body: formData,
       })
 
       if (!uploadResponse.ok) {
@@ -412,7 +498,7 @@ export default function ServiceInquiryForm({ kind }: ServiceInquiryFormProps) {
             onChange={handleTextChange('inquiryDetails')}
           />
 
-          {isNewService || isFeatureExtension ? (
+          {isNewService || isFeatureExtension || isIssueResolution ? (
             <>
               <Typography variant="h6">첨부 자료 (선택)</Typography>
               <TextField
@@ -422,8 +508,10 @@ export default function ServiceInquiryForm({ kind }: ServiceInquiryFormProps) {
                 onChange={handleFileChange}
                 helperText={
                   isNewService
-                    ? '기획서, 화면 설계서, 디자인 시안 등 (최대 5개)'
-                    : '변경 요청서, 현재 화면 캡처, 관련 문서 등 (최대 8개)'
+                    ? '기획서, 화면 설계서, 디자인 시안 등 (최대 5개, 총 용량 80MB 미만, 미지원 형식은 ZIP 압축 첨부)'
+                    : isFeatureExtension
+                      ? '변경 요청서, 현재 화면 캡처, 관련 문서 등 (최대 8개, 총 용량 80MB 미만, 미지원 형식은 ZIP 압축 첨부)'
+                      : '오류 재현 영상/스크린샷, 로그 등 (최대 3개, 총 용량 300MB 미만, 미지원 형식은 ZIP 압축 첨부)'
                 }
               />
               {files.length ? (

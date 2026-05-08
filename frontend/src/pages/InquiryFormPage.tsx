@@ -34,6 +34,18 @@ type InquiryForm = {
 }
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:4000'
+const maxFiles = 5
+const imageAndPdfMaxSize = 20 * 1024 * 1024
+const zipMaxSize = 200 * 1024 * 1024
+const maxTotalSize = 80 * 1024 * 1024
+const allowedFileTypes = [
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'application/pdf',
+  'application/zip',
+  'application/x-zip-compressed',
+]
 
 const initialFormValue: InquiryForm = {
   name: '',
@@ -87,7 +99,62 @@ export default function InquiryFormPage() {
   }
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setFiles(Array.from(event.target.files ?? []))
+    const selectedFiles = Array.from(event.target.files ?? [])
+    const totalSize = selectedFiles.reduce((acc, file) => acc + file.size, 0)
+
+    if (selectedFiles.length > maxFiles) {
+      setFiles(selectedFiles.slice(0, maxFiles))
+      setToast({
+        open: true,
+        message: `첨부파일은 최대 ${maxFiles}개까지 업로드할 수 있습니다.`,
+        severity: 'error',
+      })
+      return
+    }
+
+    const invalidTypeFile = selectedFiles.find((file) => !allowedFileTypes.includes(file.type))
+    if (invalidTypeFile) {
+      setFiles([])
+      setToast({
+        open: true,
+        message:
+          '허용되지 않는 파일 형식이 있습니다. 이미지(jpg/png/webp), PDF, ZIP만 업로드할 수 있습니다. 지원하지 않는 형식은 ZIP으로 압축해서 첨부해주세요.',
+        severity: 'error',
+      })
+      return
+    }
+
+    const oversizeFile = selectedFiles.find((file) => {
+      const isZip = file.type === 'application/zip' || file.type === 'application/x-zip-compressed'
+      if (isZip) {
+        return file.size > zipMaxSize
+      }
+      return file.size > imageAndPdfMaxSize
+    })
+    if (oversizeFile) {
+      const isZip = oversizeFile.type === 'application/zip' || oversizeFile.type === 'application/x-zip-compressed'
+      setFiles([])
+      setToast({
+        open: true,
+        message: isZip
+          ? 'ZIP 파일은 200MB 이하만 업로드할 수 있습니다.'
+          : '이미지/PDF 파일은 20MB 이하만 업로드할 수 있습니다.',
+        severity: 'error',
+      })
+      return
+    }
+
+    if (totalSize > maxTotalSize) {
+      setFiles([])
+      setToast({
+        open: true,
+        message: '첨부파일 총 용량은 80MB 이하만 업로드할 수 있습니다.',
+        severity: 'error',
+      })
+      return
+    }
+
+    setFiles(selectedFiles)
   }
 
   const uploadFiles = async (): Promise<{ url: string; fileName: string }[]> => {
@@ -106,6 +173,8 @@ export default function InquiryFormPage() {
         body: JSON.stringify({
           fileName: file.name,
           contentType: file.type || 'application/octet-stream',
+          fileSize: file.size,
+          inquiryKind: 'NEW_DEVELOPMENT',
         }),
       })
 
@@ -123,15 +192,20 @@ export default function InquiryFormPage() {
 
       const presignedData = (await presignedResponse.json()) as {
         uploadUrl: string
+        uploadFields: Record<string, string>
         fileUrl: string
       }
 
+      const formData = new FormData()
+      Object.entries(presignedData.uploadFields).forEach(([key, value]) => {
+        formData.append(key, value)
+      })
+      formData.append('Content-Type', file.type || 'application/octet-stream')
+      formData.append('file', file)
+
       const uploadResponse = await fetch(presignedData.uploadUrl, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': file.type || 'application/octet-stream',
-        },
-        body: file,
+        method: 'POST',
+        body: formData,
       })
 
       if (!uploadResponse.ok) {
@@ -361,7 +435,7 @@ export default function InquiryFormPage() {
             type="file"
             slotProps={{ htmlInput: { multiple: true } }}
             onChange={handleFileChange}
-            helperText="기획서, 와이어프레임, 디자인 시안 등"
+            helperText="기획서, 와이어프레임, 디자인 시안 등 (최대 5개, 총 용량 80MB 미만, 미지원 형식은 ZIP 압축 첨부)"
           />
           {files.length ? (
             <Alert severity="info">
