@@ -12,7 +12,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import type { ChangeEvent, FormEvent } from 'react'
 import { Link as RouterLink } from 'react-router-dom'
 import { formatPhoneNumber } from '../inquiry/phoneNumber'
@@ -64,6 +64,7 @@ const initialFormValue: InquiryForm = {
 export default function InquiryFormPage() {
   const [form, setForm] = useState<InquiryForm>(initialFormValue)
   const [files, setFiles] = useState<File[]>([])
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [toast, setToast] = useState<{
     open: boolean
@@ -98,6 +99,13 @@ export default function InquiryFormPage() {
     setForm((prev) => ({ ...prev, phone: formatted }))
   }
 
+  const clearSelectedFiles = () => {
+    setFiles([])
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+    }
+  }
+
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = Array.from(event.target.files ?? [])
     const totalSize = selectedFiles.reduce((acc, file) => acc + file.size, 0)
@@ -114,7 +122,7 @@ export default function InquiryFormPage() {
 
     const invalidTypeFile = selectedFiles.find((file) => !allowedFileTypes.includes(file.type))
     if (invalidTypeFile) {
-      setFiles([])
+      clearSelectedFiles()
       setToast({
         open: true,
         message:
@@ -133,7 +141,7 @@ export default function InquiryFormPage() {
     })
     if (oversizeFile) {
       const isZip = oversizeFile.type === 'application/zip' || oversizeFile.type === 'application/x-zip-compressed'
-      setFiles([])
+      clearSelectedFiles()
       setToast({
         open: true,
         message: isZip
@@ -145,7 +153,7 @@ export default function InquiryFormPage() {
     }
 
     if (totalSize > maxTotalSize) {
-      setFiles([])
+      clearSelectedFiles()
       setToast({
         open: true,
         message: '첨부파일 총 용량은 80MB 이하만 업로드할 수 있습니다.',
@@ -223,6 +231,12 @@ export default function InquiryFormPage() {
     setIsSubmitting(true)
 
     try {
+      const hasInvalidType = files.some((file) => !allowedFileTypes.includes(file.type))
+      if (hasInvalidType) {
+        clearSelectedFiles()
+        throw new Error('지원하지 않는 파일 형식이 있습니다. ZIP으로 압축 후 다시 첨부해주세요.')
+      }
+
       const attachments = await uploadFiles()
       const source =
         typeof document !== 'undefined' && document.referrer
@@ -433,6 +447,7 @@ export default function InquiryFormPage() {
           <TextField
             fullWidth
             type="file"
+            inputRef={fileInputRef}
             slotProps={{ htmlInput: { multiple: true } }}
             onChange={handleFileChange}
             helperText="기획서, 와이어프레임, 디자인 시안 등 (최대 5개, 총 용량 80MB 미만, 미지원 형식은 ZIP 압축 첨부)"

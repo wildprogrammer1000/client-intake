@@ -11,7 +11,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import type { ChangeEvent, FormEvent } from 'react'
 import { INQUIRY_KIND_LABEL, type InquiryServiceKind } from '../../inquiry/inquiryPaths'
 import { formatPhoneNumber } from '../../inquiry/phoneNumber'
@@ -90,6 +90,7 @@ export default function ServiceInquiryForm({ kind }: ServiceInquiryFormProps) {
   } as const
   const [form, setForm] = useState<ServiceInquiryFormState>(initialFormValue)
   const [files, setFiles] = useState<File[]>([])
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [toast, setToast] = useState<{
     open: boolean
@@ -139,6 +140,13 @@ export default function ServiceInquiryForm({ kind }: ServiceInquiryFormProps) {
     setForm((prev) => ({ ...prev, phone: formatted }))
   }
 
+  const clearSelectedFiles = () => {
+    setFiles([])
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+    }
+  }
+
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = Array.from(event.target.files ?? [])
     const maxFiles = maxFilesByKind[kind]
@@ -158,7 +166,7 @@ export default function ServiceInquiryForm({ kind }: ServiceInquiryFormProps) {
 
     const invalidTypeFile = selectedFiles.find((file) => !allowedTypes.includes(file.type))
     if (invalidTypeFile) {
-      setFiles([])
+      clearSelectedFiles()
       setToast({
         open: true,
         message:
@@ -184,7 +192,7 @@ export default function ServiceInquiryForm({ kind }: ServiceInquiryFormProps) {
     if (oversizeFile) {
       const isVideo = oversizeFile.type.startsWith('video/')
       const isZip = oversizeFile.type === 'application/zip' || oversizeFile.type === 'application/x-zip-compressed'
-      setFiles([])
+      clearSelectedFiles()
       setToast({
         open: true,
         message:
@@ -199,7 +207,7 @@ export default function ServiceInquiryForm({ kind }: ServiceInquiryFormProps) {
     }
 
     if (totalSize > maxTotalSize) {
-      setFiles([])
+      clearSelectedFiles()
       setToast({
         open: true,
         message: `첨부파일 총 용량은 ${Math.floor(maxTotalSize / (1024 * 1024))}MB 이하만 업로드할 수 있습니다.`,
@@ -277,6 +285,12 @@ export default function ServiceInquiryForm({ kind }: ServiceInquiryFormProps) {
     setIsSubmitting(true)
 
     try {
+      const hasInvalidType = files.some((file) => !allowedTypesByKind[kind].includes(file.type))
+      if (hasInvalidType) {
+        clearSelectedFiles()
+        throw new Error('지원하지 않는 파일 형식이 있습니다. ZIP으로 압축 후 다시 첨부해주세요.')
+      }
+
       const attachments = await uploadFiles()
       const kindLabel = INQUIRY_KIND_LABEL[kind]
       const inquiryDetailsForApi = `〔문의 유형: ${kindLabel}〕\n\n${form.inquiryDetails.trim()}`
@@ -504,6 +518,7 @@ export default function ServiceInquiryForm({ kind }: ServiceInquiryFormProps) {
               <TextField
                 fullWidth
                 type="file"
+                inputRef={fileInputRef}
                 slotProps={{ htmlInput: { multiple: true } }}
                 onChange={handleFileChange}
                 helperText={
