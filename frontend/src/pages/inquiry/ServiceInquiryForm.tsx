@@ -152,7 +152,15 @@ export default function ServiceInquiryForm({ kind }: ServiceInquiryFormProps) {
       })
 
       if (!presignedResponse.ok) {
-        throw new Error('첨부파일 업로드 URL 발급에 실패했습니다.')
+        const errorPayload = (await presignedResponse.json().catch(() => null)) as
+          | { message?: string }
+          | null
+        const serverMessage = errorPayload?.message?.trim()
+        throw new Error(
+          serverMessage
+            ? `첨부파일 업로드 URL 발급에 실패했습니다. 잠시 후 다시 시도해주세요. (${serverMessage})`
+            : '첨부파일 업로드 URL 발급에 실패했습니다. 잠시 후 다시 시도해주세요. 문제가 계속되면 고객센터로 문의해주세요.',
+        )
       }
 
       const presignedData = (await presignedResponse.json()) as {

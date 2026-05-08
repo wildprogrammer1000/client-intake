@@ -71,6 +71,20 @@ AWS_CLOUDFRONT_URL=https://your-cloudfront-domain
 - S3 버킷 CORS에서 프론트 도메인 `PUT` 허용이 필요합니다.
 - 민감 파일 업로드가 필요하면 파일 확장자/용량 검증과 안티바이러스 스캔(비동기)을 추가하세요.
 
+운영 점검:
+- 백엔드 시작 시 `AWS_REGION`, `AWS_S3_BUCKET`이 없으면 서버가 즉시 종료됩니다.
+- `docker-compose.yml`에서는 `env_file` 값을 우선 사용하도록 구성되어 있어, 빈 문자열로 덮어써지는 문제를 방지했습니다.
+
+운영 업로드 점검 예시:
+```bash
+curl -i -X POST "https://<api-domain>/api/uploads/presigned-url" \
+  -H "Content-Type: application/json" \
+  -d '{"fileName":"health-check.txt","contentType":"text/plain"}'
+```
+
+- 응답이 `200`이고 `uploadUrl`, `fileUrl`이 포함되어야 합니다.
+- `uploadUrl`로 `PUT` 업로드 후 문의 API(`/api/inquiries`)에 `attachments`로 `fileUrl`을 포함해 최종 저장까지 확인하세요.
+
 ## 관리자 인증/조회
 
 - 로그인: `POST /api/admin/auth/login`

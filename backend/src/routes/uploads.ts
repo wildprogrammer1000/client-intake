@@ -42,6 +42,10 @@ uploadRouter.post('/presigned-url', async (req, res) => {
     const bucket = process.env.AWS_S3_BUCKET?.trim()
 
     if (!region || !bucket) {
+      console.error('[uploads] missing required S3 env', {
+        hasRegion: Boolean(region),
+        hasBucket: Boolean(bucket),
+      })
       return res.status(500).json({
         message:
           'S3 업로드 설정이 누락되었습니다. AWS_REGION, AWS_S3_BUCKET을 확인해주세요.',
@@ -75,7 +79,12 @@ uploadRouter.post('/presigned-url', async (req, res) => {
       expiresIn: uploadUrlExpireSeconds,
     })
   } catch (error) {
-    console.error(error)
+    console.error('[uploads] failed to create presigned url', {
+      hasRegion: Boolean(process.env.AWS_REGION?.trim()),
+      hasBucket: Boolean(process.env.AWS_S3_BUCKET?.trim()),
+      errorName: error instanceof Error ? error.name : 'UnknownError',
+      errorMessage: error instanceof Error ? error.message : String(error),
+    })
     return res.status(500).json({ message: '업로드 URL 생성 중 오류가 발생했습니다.' })
   }
 })
