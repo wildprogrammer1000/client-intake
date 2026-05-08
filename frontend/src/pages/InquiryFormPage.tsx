@@ -15,18 +15,13 @@ import {
 import { useMemo, useState } from 'react'
 import type { ChangeEvent, FormEvent } from 'react'
 import { Link as RouterLink } from 'react-router-dom'
-import PhoneNumberFields from '../inquiry/PhoneNumberFields'
-import {
-  emptyPhoneParts,
-  isPhonePartsComplete,
-  joinPhoneParts,
-  type PhoneParts,
-} from '../inquiry/phoneParts'
+import { formatPhoneNumber } from '../inquiry/phoneNumber'
 
 type ProjectType = 'WEBSITE' | 'MOBILE_APP' | 'GAME' | 'SERVICE_PROGRAM' | 'OTHER'
 
-type InquiryForm = PhoneParts & {
+type InquiryForm = {
   name: string
+  phone: string
   email: string
   projectType: ProjectType
   projectTypeDetail: string
@@ -41,8 +36,8 @@ type InquiryForm = PhoneParts & {
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:4000'
 
 const initialFormValue: InquiryForm = {
-  ...emptyPhoneParts(),
   name: '',
+  phone: '',
   email: '',
   projectType: 'WEBSITE',
   projectTypeDetail: '',
@@ -71,7 +66,7 @@ export default function InquiryFormPage() {
   const canSubmit = useMemo(() => {
     return Boolean(
       form.name.trim() &&
-      isPhonePartsComplete(form) &&
+      form.phone.trim() &&
       form.developmentPurpose.trim() &&
       form.keyFeatures.trim() &&
       form.expectedTimeline.trim() &&
@@ -85,6 +80,11 @@ export default function InquiryFormPage() {
     (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       setForm((prev) => ({ ...prev, [field]: event.target.value }))
     }
+
+  const handlePhoneChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatPhoneNumber(event.target.value)
+    setForm((prev) => ({ ...prev, phone: formatted }))
+  }
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     setFiles(Array.from(event.target.files ?? []))
@@ -146,6 +146,7 @@ export default function InquiryFormPage() {
         typeof document !== 'undefined' && document.referrer
           ? document.referrer.slice(0, 500)
           : undefined
+      const formattedPhone = formatPhoneNumber(form.phone)
       const response = await fetch(`${API_BASE_URL}/api/inquiries`, {
         method: 'POST',
         headers: {
@@ -153,7 +154,7 @@ export default function InquiryFormPage() {
         },
         body: JSON.stringify({
           name: form.name.trim(),
-          phone: joinPhoneParts(form),
+          phone: formattedPhone,
           email: form.email.trim(),
           projectType: form.projectType,
           projectTypeDetail: form.projectTypeDetail.trim() || undefined,
@@ -230,15 +231,13 @@ export default function InquiryFormPage() {
               value={form.name}
               onChange={handleTextChange('name')}
             />
-            <PhoneNumberFields
-              value={{
-                phone1: form.phone1,
-                phone2: form.phone2,
-                phone3: form.phone3,
-              }}
-              onChange={(next) => setForm((prev) => ({ ...prev, ...next }))}
+            <TextField
+              fullWidth
               required
-              disabled={isSubmitting}
+              label="전화번호"
+              placeholder="010-1234-5678"
+              value={form.phone}
+              onChange={handlePhoneChange}
             />
             <TextField
               fullWidth

@@ -13,21 +13,16 @@ import {
 } from '@mui/material'
 import { useMemo, useState } from 'react'
 import type { ChangeEvent, FormEvent } from 'react'
-import PhoneNumberFields from '../../inquiry/PhoneNumberFields'
 import { INQUIRY_KIND_LABEL, type InquiryServiceKind } from '../../inquiry/inquiryPaths'
-import {
-  emptyPhoneParts,
-  isPhonePartsComplete,
-  joinPhoneParts,
-  type PhoneParts,
-} from '../../inquiry/phoneParts'
+import { formatPhoneNumber } from '../../inquiry/phoneNumber'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:4000'
 
 type ProjectType = 'WEBSITE' | 'MOBILE_APP' | 'GAME' | 'SERVICE_PROGRAM' | 'OTHER'
 
-export type ServiceInquiryFormState = PhoneParts & {
+export type ServiceInquiryFormState = {
   name: string
+  phone: string
   email: string
   projectType: ProjectType
   projectTypeDetail: string
@@ -40,8 +35,8 @@ export type ServiceInquiryFormState = PhoneParts & {
 }
 
 const initialFormValue: ServiceInquiryFormState = {
-  ...emptyPhoneParts(),
   name: '',
+  phone: '',
   email: '',
   projectType: 'WEBSITE',
   projectTypeDetail: '',
@@ -83,7 +78,7 @@ export default function ServiceInquiryForm({ kind }: ServiceInquiryFormProps) {
   })
 
   const canSubmit = useMemo(() => {
-    const hasBasicFields = Boolean(form.name.trim() && isPhonePartsComplete(form))
+    const hasBasicFields = Boolean(form.name.trim() && form.phone.trim())
 
     if (!hasBasicFields) {
       return false
@@ -114,6 +109,11 @@ export default function ServiceInquiryForm({ kind }: ServiceInquiryFormProps) {
     (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       setForm((prev) => ({ ...prev, [field]: event.target.value }))
     }
+
+  const handlePhoneChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatPhoneNumber(event.target.value)
+    setForm((prev) => ({ ...prev, phone: formatted }))
+  }
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = Array.from(event.target.files ?? [])
@@ -190,6 +190,7 @@ export default function ServiceInquiryForm({ kind }: ServiceInquiryFormProps) {
         typeof document !== 'undefined' && document.referrer
           ? document.referrer.slice(0, 500)
           : undefined
+      const formattedPhone = formatPhoneNumber(form.phone)
 
       const response = await fetch(`${API_BASE_URL}/api/inquiries`, {
         method: 'POST',
@@ -199,7 +200,7 @@ export default function ServiceInquiryForm({ kind }: ServiceInquiryFormProps) {
         body: JSON.stringify({
           inquiryKind: inquiryKindForApi,
           name: form.name.trim(),
-          phone: joinPhoneParts(form),
+          phone: formattedPhone,
           email: form.email.trim(),
           projectType: form.projectType,
           projectTypeDetail: form.projectTypeDetail.trim() || undefined,
@@ -272,15 +273,13 @@ export default function ServiceInquiryForm({ kind }: ServiceInquiryFormProps) {
               value={form.name}
               onChange={handleTextChange('name')}
             />
-            <PhoneNumberFields
-              value={{
-                phone1: form.phone1,
-                phone2: form.phone2,
-                phone3: form.phone3,
-              }}
-              onChange={(next) => setForm((prev) => ({ ...prev, ...next }))}
+            <TextField
+              fullWidth
               required
-              disabled={isSubmitting}
+              label="전화번호"
+              placeholder="010-1234-5678"
+              value={form.phone}
+              onChange={handlePhoneChange}
             />
             <TextField
               fullWidth
@@ -342,7 +341,7 @@ export default function ServiceInquiryForm({ kind }: ServiceInquiryFormProps) {
                 multiline
                 minRows={3}
                 label="필요한 기능"
-                placeholder="예: 회원가입/로그인, 예약/결제, 관리자 페이지"
+                placeholder={'대략적으로 작성하셔도 기획을 도와드립니다\n예: 회원가입/로그인, 예약/결제, 관리자 페이지'}
                 value={form.keyFeatures}
                 onChange={handleTextChange('keyFeatures')}
               />
@@ -369,7 +368,6 @@ export default function ServiceInquiryForm({ kind }: ServiceInquiryFormProps) {
                 fullWidth
                 required
                 label="예산"
-                placeholder="예: 500만 ~ 1,000만원"
                 value={form.budget}
                 onChange={handleTextChange('budget')}
               />

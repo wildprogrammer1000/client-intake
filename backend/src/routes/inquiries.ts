@@ -75,6 +75,36 @@ function getFileExtension(fileName: string): string {
   return fileName.slice(idx + 1).toLowerCase()
 }
 
+function formatPhoneNumber(value: string): string {
+  const trimmed = value.trim()
+  const digits = trimmed.replace(/\D/g, '')
+
+  if (!digits) {
+    return ''
+  }
+
+  if (digits.length === 11) {
+    return `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7)}`
+  }
+
+  if (digits.length === 10) {
+    if (digits.startsWith('02')) {
+      return `${digits.slice(0, 2)}-${digits.slice(2, 6)}-${digits.slice(6)}`
+    }
+    return `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}`
+  }
+
+  if (digits.length === 9 && digits.startsWith('02')) {
+    return `${digits.slice(0, 2)}-${digits.slice(2, 5)}-${digits.slice(5)}`
+  }
+
+  if (digits.length === 8) {
+    return `${digits.slice(0, 4)}-${digits.slice(4)}`
+  }
+
+  return trimmed
+}
+
 export const inquiryRouter = Router()
 
 inquiryRouter.post('/', async (req, res) => {
@@ -89,6 +119,7 @@ inquiryRouter.post('/', async (req, res) => {
     }
 
     const payload = result.data
+    const formattedPhone = formatPhoneNumber(payload.phone)
     const allowedExtensions = allowedAttachmentExtensionsByKind[payload.inquiryKind]
     const invalidFile = payload.attachments.find((attachment) => {
       if (!attachment.fileName) {
@@ -107,7 +138,7 @@ inquiryRouter.post('/', async (req, res) => {
       data: {
         inquiryKind: payload.inquiryKind,
         name: payload.name,
-        phone: payload.phone,
+        phone: formattedPhone,
         email: payload.email ?? '',
         projectType: payload.projectType,
         projectTypeDetail: payload.projectTypeDetail,
