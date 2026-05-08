@@ -134,11 +134,7 @@ uploadRouter.post('/presigned-url', async (req, res) => {
       Expires: uploadUrlExpireSeconds,
       Conditions: [
         ['content-length-range', 1, maxFileSize],
-        ['eq', '$Content-Type', normalizedContentType],
       ],
-      Fields: {
-        'Content-Type': normalizedContentType,
-      },
     })
     const fileUrl = buildFileUrl(bucket, region, key)
 

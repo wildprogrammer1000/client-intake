@@ -208,7 +208,6 @@ export default function InquiryFormPage() {
       Object.entries(presignedData.uploadFields).forEach(([key, value]) => {
         formData.append(key, value)
       })
-      formData.append('Content-Type', file.type || 'application/octet-stream')
       formData.append('file', file)
 
       const uploadResponse = await fetch(presignedData.uploadUrl, {
