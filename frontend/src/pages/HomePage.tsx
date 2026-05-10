@@ -272,7 +272,7 @@ export default function HomePage() {
                       바이브코딩 관련 문의
                     </Typography>
                     <Typography sx={{ fontWeight: 600, color: alpha('#111111', 0.82), fontSize: { xs: '0.88rem', md: '0.95rem' } }}>
-                      카카오톡 오픈채팅으로 바로 연결 →
+                      카카오톡 오픈채팅 연결 →
                     </Typography>
                   </Stack>
                 </Stack>
